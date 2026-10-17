@@ -23,6 +23,8 @@ namespace Meridian
         private GUIStyle rudderTrackStyle;
         private GUIStyle rudderThumbStyle;
         private GUIStyle stopButtonStyle;
+        private GUIStyle panelStyle;
+        private GUIStyle panelLightStyle;
         private Texture2D panelTexture;
         private Texture2D panelLightTexture;
         private Texture2D borderTexture;
@@ -30,6 +32,8 @@ namespace Meridian
         private Texture2D accentTexture;
         private Texture2D stopTexture;
         private Texture2D stopPressedTexture;
+        private Texture2D forwardZoneTexture;
+        private Texture2D reverseZoneTexture;
 
         public void SetShip(ShipController controller) => ship = controller;
 
@@ -88,7 +92,7 @@ namespace Meridian
             if (Screen.height >= 620f)
             {
                 GUI.Label(new Rect((Screen.width - 620f) * 0.5f, margin + headerHeight + 7f, 620f, 24f),
-                    "W/S İKİ MAKİNE   •   Q/A İSKELE   •   E/D SANCAK   •   ←/→ DÜMEN   •   ↓ ORTALA",
+                    "SÜRÜKLE: KAMERA   •   W/S İKİ MAKİNE   •   Q/A İSKELE   •   E/D SANCAK   •   ←/→ DÜMEN",
                     metricLabelStyle);
             }
         }
@@ -96,10 +100,10 @@ namespace Meridian
         private void DrawTelemetryBar(Rect area)
         {
             DrawPanel(area, false);
-            float brandWidth = area.width * 0.22f;
+            float brandWidth = area.width * 0.26f;
             float metricWidth = (area.width - brandWidth) / 4f;
 
-            GUI.Label(new Rect(area.x + 16f, area.y + 8f, brandWidth - 22f, area.height - 16f), "MERIDIAN", brandStyle);
+            GUI.Label(new Rect(area.x + 16f, area.y + 8f, brandWidth - 22f, area.height - 16f), "TCG BARBAROS  •  F-244", brandStyle);
             DrawMetric(new Rect(area.x + brandWidth, area.y, metricWidth, area.height), "SÜRAT", $"{ship.SpeedKnots:0.0} kn");
             DrawMetric(new Rect(area.x + brandWidth + metricWidth, area.y, metricWidth, area.height), "BAŞ", $"{ship.Heading:000}°");
             DrawMetric(new Rect(area.x + brandWidth + metricWidth * 2f, area.y, metricWidth, area.height), "ROTA", $"{ship.CourseOverGround:000}°");
@@ -127,6 +131,8 @@ namespace Meridian
             float sliderTop = area.y + 68f;
             float sliderBottom = area.yMax - 18f;
             float sliderHeight = Mathf.Max(70f, sliderBottom - sliderTop);
+            GUI.DrawTexture(new Rect(area.center.x - 8f, sliderTop, 16f, sliderHeight * 0.5f), forwardZoneTexture);
+            GUI.DrawTexture(new Rect(area.center.x - 8f, sliderTop + sliderHeight * 0.5f, 16f, sliderHeight * 0.5f), reverseZoneTexture);
             float newValue = GUI.VerticalSlider(new Rect(area.center.x - 10f, sliderTop, 20f, sliderHeight), value, 1f, -1f, engineTrackStyle, engineThumbStyle);
             setter(newValue);
 
@@ -163,24 +169,27 @@ namespace Meridian
 
         private void DrawPanel(Rect area, bool light)
         {
-            GUI.DrawTexture(area, light ? panelLightTexture : panelTexture);
-            GUI.DrawTexture(new Rect(area.x, area.y, area.width, 1f), borderTexture);
-            GUI.DrawTexture(new Rect(area.x, area.yMax - 1f, area.width, 1f), borderTexture);
-            GUI.DrawTexture(new Rect(area.x, area.y, 1f, area.height), borderTexture);
-            GUI.DrawTexture(new Rect(area.xMax - 1f, area.y, 1f, area.height), borderTexture);
+            GUI.Box(area, GUIContent.none, light ? panelLightStyle : panelStyle);
         }
 
         private void EnsureStyles()
         {
             if (panelTexture != null) return;
 
-            panelTexture = CreateTexture(PanelColor);
-            panelLightTexture = CreateTexture(PanelLightColor);
+            panelTexture = CreateRoundedTexture(64, PanelColor, BorderColor, 13f, 2f);
+            panelLightTexture = CreateRoundedTexture(64, PanelLightColor, BorderColor, 13f, 2f);
             borderTexture = CreateTexture(BorderColor);
-            trackTexture = CreateTexture(new Color(0.04f, 0.08f, 0.10f, 0.95f));
-            accentTexture = CreateTexture(AccentColor);
-            stopTexture = CreateTexture(new Color(0.68f, 0.12f, 0.11f, 1f));
-            stopPressedTexture = CreateTexture(new Color(0.88f, 0.2f, 0.16f, 1f));
+            trackTexture = CreateRoundedTexture(32, new Color(0.025f, 0.055f, 0.07f, 1f), BorderColor, 9f, 1f);
+            accentTexture = CreateCircleTexture(32, AccentColor, new Color(1f, 0.88f, 0.56f, 1f));
+            stopTexture = CreateRoundedTexture(48, new Color(0.63f, 0.075f, 0.07f, 1f), new Color(1f, 0.35f, 0.28f, 0.8f), 12f, 2f);
+            stopPressedTexture = CreateRoundedTexture(48, new Color(0.88f, 0.16f, 0.12f, 1f), new Color(1f, 0.66f, 0.55f, 0.9f), 12f, 2f);
+            forwardZoneTexture = CreateRoundedTexture(24, new Color(0.15f, 0.62f, 0.42f, 0.23f), Color.clear, 8f, 0f);
+            reverseZoneTexture = CreateRoundedTexture(24, new Color(0.86f, 0.24f, 0.15f, 0.2f), Color.clear, 8f, 0f);
+
+            panelStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(15, 15, 15, 15) };
+            panelStyle.normal.background = panelTexture;
+            panelLightStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(15, 15, 15, 15) };
+            panelLightStyle.normal.background = panelLightTexture;
 
             brandStyle = NewLabelStyle(TextAnchor.MiddleLeft, TextColor, FontStyle.Bold);
             metricLabelStyle = NewLabelStyle(TextAnchor.MiddleCenter, MutedColor, FontStyle.Normal);
@@ -203,6 +212,7 @@ namespace Meridian
             rudderThumbStyle.active.background = accentTexture;
 
             stopButtonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            stopButtonStyle.border = new RectOffset(13, 13, 13, 13);
             stopButtonStyle.normal.background = stopTexture;
             stopButtonStyle.hover.background = stopPressedTexture;
             stopButtonStyle.active.background = stopPressedTexture;
@@ -214,7 +224,7 @@ namespace Meridian
         private void UpdateFontSizes()
         {
             int baseSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.026f), 11, 22);
-            brandStyle.fontSize = Mathf.Clamp(baseSize + 7, 17, 30);
+            brandStyle.fontSize = Mathf.Clamp(baseSize + 3, 14, 24);
             metricLabelStyle.fontSize = baseSize;
             metricValueStyle.fontSize = Mathf.Clamp(baseSize + 4, 15, 27);
             controlLabelStyle.fontSize = Mathf.Clamp(baseSize + 1, 13, 24);
@@ -237,6 +247,54 @@ namespace Meridian
         {
             Texture2D texture = new(1, 1, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
             texture.SetPixel(0, 0, color);
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateRoundedTexture(int size, Color fill, Color border, float radius, float borderWidth)
+        {
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            Vector2 center = new(size * 0.5f, size * 0.5f);
+            Vector2 half = new(size * 0.5f - 1f, size * 0.5f - 1f);
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    Vector2 point = new(Mathf.Abs(x - center.x), Mathf.Abs(y - center.y));
+                    Vector2 corner = new(Mathf.Max(point.x - (half.x - radius), 0f), Mathf.Max(point.y - (half.y - radius), 0f));
+                    float distance = corner.magnitude - radius;
+                    if (distance > 0f)
+                    {
+                        texture.SetPixel(x, y, Color.clear);
+                    }
+                    else if (borderWidth > 0f && distance > -borderWidth)
+                    {
+                        texture.SetPixel(x, y, border);
+                    }
+                    else
+                    {
+                        texture.SetPixel(x, y, fill);
+                    }
+                }
+            }
+            texture.Apply();
+            return texture;
+        }
+
+        private static Texture2D CreateCircleTexture(int size, Color fill, Color rim)
+        {
+            Texture2D texture = new(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
+            Vector2 center = new((size - 1f) * 0.5f, (size - 1f) * 0.5f);
+            float radius = size * 0.46f;
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float distance = Vector2.Distance(new Vector2(x, y), center);
+                    Color color = distance > radius ? Color.clear : distance > radius - 2f ? rim : fill;
+                    texture.SetPixel(x, y, color);
+                }
+            }
             texture.Apply();
             return texture;
         }

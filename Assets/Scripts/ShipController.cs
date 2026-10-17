@@ -8,6 +8,7 @@ namespace Meridian
         [Header("Engines")]
         [SerializeField] private float maximumThrust = 6000f;
         [SerializeField] private float engineSpacing = 3.2f;
+        [SerializeField] private float engineLongitudinalOffset = 12.2f;
         [SerializeField] private float engineResponsePerSecond = 0.45f;
 
         [Header("Water resistance")]
@@ -81,7 +82,7 @@ namespace Meridian
             portActual = Mathf.MoveTowards(portActual, portTarget, engineResponsePerSecond * Time.fixedDeltaTime);
             starboardActual = Mathf.MoveTowards(starboardActual, starboardTarget, engineResponsePerSecond * Time.fixedDeltaTime);
 
-            Vector3 stern = transform.position - transform.forward * 5.2f;
+            Vector3 stern = transform.position - transform.forward * engineLongitudinalOffset;
             Vector3 portEngine = stern - transform.right * (engineSpacing * 0.5f);
             Vector3 starboardEngine = stern + transform.right * (engineSpacing * 0.5f);
 

@@ -1,19 +1,33 @@
+using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Meridian
 {
     public sealed class PrototypeBootstrap : MonoBehaviour
     {
         private Material seaMaterial;
-        private Material shipMaterial;
+        private Material foamMaterial;
+        private Material hullMaterial;
+        private Material hullDarkMaterial;
         private Material deckMaterial;
-        private Material harborMaterial;
-        private Material buoyMaterial;
+        private Material superstructureMaterial;
+        private Material windowMaterial;
+        private Material concreteMaterial;
+        private Material sandMaterial;
+        private Material grassMaterial;
+        private Material roofMaterial;
+        private Material buoyRedMaterial;
+        private Material buoyGreenMaterial;
+        private Material whiteMaterial;
+        private Material orangeMaterial;
+        private Material darkMaterial;
 
         private void Awake()
         {
             Application.targetFrameRate = 60;
             BuildMaterials();
+            BuildLighting();
             BuildEnvironment();
             ShipController ship = BuildShip();
             BuildCamera(ship.transform);
@@ -22,72 +36,353 @@ namespace Meridian
 
         private void BuildMaterials()
         {
-            seaMaterial = CreateMaterial(new Color(0.035f, 0.30f, 0.39f), 0.25f, 0.65f);
-            shipMaterial = CreateMaterial(new Color(0.34f, 0.41f, 0.42f), 0.2f, 0.35f);
-            deckMaterial = CreateMaterial(new Color(0.66f, 0.70f, 0.69f), 0.15f, 0.25f);
-            harborMaterial = CreateMaterial(new Color(0.31f, 0.34f, 0.33f), 0.05f, 0.25f);
-            buoyMaterial = CreateMaterial(new Color(0.85f, 0.18f, 0.12f), 0.1f, 0.35f);
+            seaMaterial = CreateMaterial(new Color(0.025f, 0.28f, 0.39f), 0.12f, 0.82f);
+            seaMaterial.mainTexture = CreateWaveTexture();
+            seaMaterial.mainTextureScale = new Vector2(32f, 42f);
+
+            Shader particleShader = Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Sprites/Default");
+            foamMaterial = new Material(particleShader) { color = new Color(0.78f, 0.95f, 1f, 0.62f) };
+
+            hullMaterial = CreateMaterial(new Color(0.31f, 0.38f, 0.39f), 0.18f, 0.42f);
+            hullDarkMaterial = CreateMaterial(new Color(0.15f, 0.20f, 0.21f), 0.14f, 0.3f);
+            deckMaterial = CreateMaterial(new Color(0.19f, 0.25f, 0.25f), 0.05f, 0.25f);
+            superstructureMaterial = CreateMaterial(new Color(0.62f, 0.67f, 0.66f), 0.12f, 0.38f);
+            windowMaterial = CreateMaterial(new Color(0.025f, 0.10f, 0.14f), 0.35f, 0.88f);
+            concreteMaterial = CreateMaterial(new Color(0.34f, 0.36f, 0.34f), 0.02f, 0.2f);
+            sandMaterial = CreateMaterial(new Color(0.58f, 0.54f, 0.42f), 0f, 0.16f);
+            grassMaterial = CreateMaterial(new Color(0.20f, 0.34f, 0.23f), 0f, 0.2f);
+            roofMaterial = CreateMaterial(new Color(0.32f, 0.18f, 0.14f), 0.05f, 0.22f);
+            buoyRedMaterial = CreateMaterial(new Color(0.82f, 0.12f, 0.09f), 0.12f, 0.45f);
+            buoyGreenMaterial = CreateMaterial(new Color(0.08f, 0.58f, 0.34f), 0.12f, 0.45f);
+            whiteMaterial = CreateMaterial(new Color(0.9f, 0.93f, 0.91f), 0.05f, 0.45f);
+            orangeMaterial = CreateMaterial(new Color(0.92f, 0.35f, 0.08f), 0.04f, 0.35f);
+            darkMaterial = CreateMaterial(new Color(0.08f, 0.10f, 0.10f), 0.15f, 0.3f);
         }
 
-        private void BuildEnvironment()
+        private void BuildLighting()
         {
-            RenderSettings.ambientLight = new Color(0.48f, 0.57f, 0.60f);
+            RenderSettings.fog = true;
+            RenderSettings.fogMode = FogMode.Linear;
+            RenderSettings.fogColor = new Color(0.56f, 0.70f, 0.73f);
+            RenderSettings.fogStartDistance = 85f;
+            RenderSettings.fogEndDistance = 275f;
+            RenderSettings.ambientMode = AmbientMode.Trilight;
+            RenderSettings.ambientSkyColor = new Color(0.54f, 0.68f, 0.72f);
+            RenderSettings.ambientEquatorColor = new Color(0.31f, 0.42f, 0.43f);
+            RenderSettings.ambientGroundColor = new Color(0.16f, 0.20f, 0.19f);
+
+            Shader skyShader = Shader.Find("Skybox/Procedural");
+            if (skyShader != null)
+            {
+                Material sky = new(skyShader);
+                sky.SetColor("_SkyTint", new Color(0.32f, 0.55f, 0.63f));
+                sky.SetColor("_GroundColor", new Color(0.24f, 0.30f, 0.29f));
+                sky.SetFloat("_AtmosphereThickness", 0.72f);
+                sky.SetFloat("_SunSize", 0.035f);
+                RenderSettings.skybox = sky;
+            }
 
             GameObject sun = new("Sun");
             Light light = sun.AddComponent<Light>();
             light.type = LightType.Directional;
-            light.intensity = 1.2f;
-            light.color = new Color(1f, 0.93f, 0.78f);
-            sun.transform.rotation = Quaternion.Euler(42f, -28f, 0f);
+            light.intensity = 1.15f;
+            light.color = new Color(1f, 0.91f, 0.74f);
+            light.shadows = LightShadows.Soft;
+            light.shadowStrength = 0.72f;
+            light.shadowBias = 0.06f;
+            sun.transform.rotation = Quaternion.Euler(38f, -32f, 0f);
+            QualitySettings.shadowDistance = 120f;
+        }
 
-            CreateCube("Sea", new Vector3(0f, -0.65f, 35f), new Vector3(220f, 1f, 260f), seaMaterial, true);
-            CreateCube("Left breakwater", new Vector3(-42f, 1.4f, 38f), new Vector3(18f, 3f, 90f), harborMaterial, true);
-            CreateCube("Right pier", new Vector3(45f, 1.1f, 66f), new Vector3(24f, 2.4f, 72f), harborMaterial, true);
-            CreateCube("Harbor wall", new Vector3(0f, 1.6f, 116f), new Vector3(110f, 3.2f, 10f), harborMaterial, true);
+        private void BuildEnvironment()
+        {
+            GameObject sea = new("Animated Sea");
+            sea.transform.position = new Vector3(0f, -0.72f, 52f);
+            sea.AddComponent<MeshFilter>();
+            sea.AddComponent<MeshRenderer>();
+            sea.AddComponent<OceanSurface>().Configure(seaMaterial, 300f, 360f, 44);
 
-            for (int i = 0; i < 6; i++)
+            BuildCoastline();
+            BuildHarborBuildings();
+            BuildNavigationMarkers();
+            BuildDistantTown();
+        }
+
+        private void BuildCoastline()
+        {
+            CreateCube("West coast", new Vector3(-65f, 0.2f, 70f), new Vector3(42f, 2.4f, 190f), sandMaterial, true);
+            CreateCube("West vegetation", new Vector3(-72f, 1.35f, 70f), new Vector3(29f, 0.7f, 185f), grassMaterial, true);
+            CreateCube("East coast", new Vector3(68f, 0.15f, 86f), new Vector3(44f, 2.3f, 170f), sandMaterial, true);
+            CreateCube("East vegetation", new Vector3(76f, 1.3f, 86f), new Vector3(29f, 0.65f, 166f), grassMaterial, true);
+
+            CreateCube("West breakwater", new Vector3(-38f, 0.55f, 54f), new Vector3(14f, 2.7f, 96f), concreteMaterial, true);
+            CreateCube("West breakwater cap", new Vector3(-38f, 2f, 54f), new Vector3(15f, 0.25f, 97f), whiteMaterial, false);
+            CreateCube("East pier", new Vector3(42f, 0.5f, 70f), new Vector3(18f, 2.5f, 82f), concreteMaterial, true);
+            CreateCube("East pier cap", new Vector3(42f, 1.85f, 70f), new Vector3(19f, 0.24f, 83f), whiteMaterial, false);
+            CreateCube("Harbor wall", new Vector3(0f, 0.7f, 128f), new Vector3(120f, 2.8f, 9f), concreteMaterial, true);
+
+            Material shoreFoam = CreateMaterial(new Color(0.72f, 0.88f, 0.86f, 0.7f), 0f, 0.35f);
+            CreateCube("West shoreline foam", new Vector3(-44.3f, -0.43f, 70f), new Vector3(1.1f, 0.05f, 185f), shoreFoam, false);
+            CreateCube("East shoreline foam", new Vector3(45.7f, -0.43f, 86f), new Vector3(1.1f, 0.05f, 165f), shoreFoam, false);
+            CreateCube("Harbor wall foam", new Vector3(0f, -0.42f, 122.9f), new Vector3(118f, 0.05f, 0.8f), shoreFoam, false);
+
+            for (int i = 0; i < 12; i++)
+            {
+                float z = 12f + i * 8f;
+                CreatePrimitiveChild(PrimitiveType.Sphere, $"West rock {i + 1}", null,
+                    new Vector3(-47f + Mathf.Sin(i * 1.8f) * 2f, 0f, z),
+                    new Vector3(2.4f + (i % 3), 1.1f, 2f + (i % 2)), concreteMaterial, Vector3.zero, true);
+            }
+
+            Random.State coastState = Random.state;
+            Random.InitState(244);
+            for (int i = 0; i < 30; i++)
             {
                 float side = i % 2 == 0 ? -1f : 1f;
-                GameObject buoy = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-                buoy.name = $"Buoy {i + 1}";
-                buoy.transform.position = new Vector3(side * 25f, 0.35f, 20f + i * 16f);
-                buoy.transform.localScale = new Vector3(0.65f, 1f, 0.65f);
-                buoy.GetComponent<Renderer>().sharedMaterial = buoyMaterial;
+                float x = side * Random.Range(56f, 84f);
+                float z = Random.Range(-5f, 165f);
+                float size = Random.Range(2.2f, 5.5f);
+                CreatePrimitiveChild(PrimitiveType.Sphere, $"Coastal scrub {i + 1}", null,
+                    new Vector3(x, 1.4f, z), new Vector3(size, Random.Range(1.4f, 3f), size), grassMaterial, Vector3.zero, false);
             }
+            Random.state = coastState;
+        }
+
+        private void BuildHarborBuildings()
+        {
+            CreateWarehouse("Operations building", new Vector3(-60f, 4.2f, 73f), new Vector3(20f, 7f, 24f));
+            CreateWarehouse("Maintenance hangar", new Vector3(61f, 4.6f, 100f), new Vector3(25f, 8f, 30f));
+            CreateWarehouse("Harbor office", new Vector3(57f, 3.2f, 49f), new Vector3(14f, 5.2f, 16f));
+
+            for (int i = 0; i < 5; i++)
+            {
+                CreateCube($"Container red {i}", new Vector3(50f + (i % 2) * 4.2f, 2.4f, 74f + i * 5f), new Vector3(3.8f, 2.2f, 4.5f), buoyRedMaterial, true);
+                CreateCube($"Container blue {i}", new Vector3(55f + (i % 2) * 4.2f, 2.4f, 76f + i * 5f), new Vector3(3.8f, 2.2f, 4.5f), seaMaterial, true);
+            }
+
+            BuildCrane(new Vector3(45f, 2f, 112f));
+            BuildCrane(new Vector3(-48f, 2f, 101f));
+            BuildLighthouse(new Vector3(-38f, 2.2f, 5.5f));
+
+            for (int i = 0; i < 9; i++)
+            {
+                float z = 24f + i * 10f;
+                CreatePrimitiveChild(PrimitiveType.Cylinder, $"Bollard {i + 1}", null,
+                    new Vector3(33.5f, 2.35f, z), new Vector3(0.45f, 0.5f, 0.45f), darkMaterial, Vector3.zero, false);
+            }
+        }
+
+        private void BuildNavigationMarkers()
+        {
+            for (int i = 0; i < 8; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+                Material buoyMaterial = side < 0f ? buoyRedMaterial : buoyGreenMaterial;
+                Vector3 position = new(side * (23f + (i % 3) * 1.5f), -0.15f, 14f + i * 14f);
+                GameObject buoy = CreatePrimitiveChild(PrimitiveType.Cylinder, $"Buoy {i + 1}", null, position,
+                    new Vector3(0.55f, 1.15f, 0.55f), buoyMaterial, Vector3.zero, false);
+                CreatePrimitiveChild(PrimitiveType.Sphere, "Top mark", buoy.transform, new Vector3(0f, 1.05f, 0f),
+                    new Vector3(0.34f, 0.34f, 0.34f), buoyMaterial, Vector3.zero, false);
+            }
+        }
+
+        private void BuildDistantTown()
+        {
+            Random.State previousState = Random.state;
+            Random.InitState(2026);
+            for (int i = 0; i < 24; i++)
+            {
+                float side = i % 2 == 0 ? -1f : 1f;
+                float width = Random.Range(5f, 11f);
+                float height = Random.Range(5f, 17f);
+                float depth = Random.Range(6f, 13f);
+                float x = side * Random.Range(66f, 88f);
+                float z = Random.Range(28f, 155f);
+                Material material = i % 3 == 0 ? superstructureMaterial : concreteMaterial;
+                CreateCube($"Distant building {i + 1}", new Vector3(x, 1.25f + height * 0.5f, z), new Vector3(width, height, depth), material, true);
+            }
+            Random.state = previousState;
         }
 
         private ShipController BuildShip()
         {
-            GameObject root = new("Prototype Frigate");
-            root.transform.position = new Vector3(0f, 0.55f, -36f);
+            GameObject root = new("TCG BARBAROS F-244");
+            root.transform.position = new Vector3(0f, 0.1f, -38f);
 
-            Rigidbody body = root.AddComponent<Rigidbody>();
+            root.AddComponent<Rigidbody>();
             BoxCollider collider = root.AddComponent<BoxCollider>();
-            collider.size = new Vector3(5f, 1.8f, 15f);
+            collider.center = new Vector3(0f, -0.05f, 0.6f);
+            collider.size = new Vector3(3.8f, 1.7f, 29.4f);
 
-            GameObject hull = GameObject.CreatePrimitive(PrimitiveType.Capsule);
-            hull.name = "Hull";
-            hull.transform.SetParent(root.transform, false);
-            hull.transform.localRotation = Quaternion.Euler(90f, 0f, 0f);
-            hull.transform.localScale = new Vector3(2.5f, 7.5f, 0.8f);
-            hull.GetComponent<Renderer>().sharedMaterial = shipMaterial;
-            Destroy(hull.GetComponent<Collider>());
+            GameObject visuals = new("Visuals");
+            visuals.transform.SetParent(root.transform, false);
+            visuals.AddComponent<ShipVisualMotion>();
 
-            GameObject deck = CreateCube("Superstructure", new Vector3(0f, 1.15f, -0.6f), new Vector3(3.3f, 1.4f, 5.5f), deckMaterial, false);
-            deck.transform.SetParent(root.transform, false);
+            GameObject hull = new("Hull");
+            hull.transform.SetParent(visuals.transform, false);
+            MeshFilter meshFilter = hull.AddComponent<MeshFilter>();
+            meshFilter.sharedMesh = CreateHullMesh();
+            MeshRenderer hullRenderer = hull.AddComponent<MeshRenderer>();
+            hullRenderer.sharedMaterial = hullMaterial;
+            hullRenderer.shadowCastingMode = ShadowCastingMode.On;
 
-            GameObject bridge = CreateCube("Bridge", new Vector3(0f, 2.15f, 0.4f), new Vector3(2.7f, 1f, 2.4f), deckMaterial, false);
-            bridge.transform.SetParent(root.transform, false);
+            CreateShipPart(PrimitiveType.Cube, "Aft deck", visuals.transform, new Vector3(0f, 0.79f, -9.65f), new Vector3(3.18f, 0.10f, 8.1f), deckMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Mid deck", visuals.transform, new Vector3(0f, 0.79f, -0.8f), new Vector3(3.34f, 0.10f, 9.4f), deckMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Fore deck", visuals.transform, new Vector3(0f, 0.86f, 8.45f), new Vector3(3.05f, 0.10f, 8.6f), deckMaterial, new Vector3(0.7f, 0f, 0f));
 
-            GameObject mast = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
-            mast.name = "Mast";
-            mast.transform.SetParent(root.transform, false);
-            mast.transform.localPosition = new Vector3(0f, 3.4f, -0.4f);
-            mast.transform.localScale = new Vector3(0.16f, 1.5f, 0.16f);
-            mast.GetComponent<Renderer>().sharedMaterial = shipMaterial;
-            Destroy(mast.GetComponent<Collider>());
+            // MEKO 200 TN Track II-A'nın karakteristik kademeli ve köşeli üst yapısı.
+            CreateTaperedBlock("Forward superstructure", visuals.transform, new Vector3(0f, 1.48f, 3.3f), 3.05f, 2.72f, 1.25f, 5.25f, 0.42f, superstructureMaterial);
+            CreateTaperedBlock("Bridge block", visuals.transform, new Vector3(0f, 2.43f, 4.18f), 2.86f, 2.5f, 0.9f, 2.75f, 0.52f, superstructureMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Bridge front windows", visuals.transform, new Vector3(0f, 2.46f, 5.43f), new Vector3(2.46f, 0.3f, 0.07f), windowMaterial, new Vector3(-9f, 0f, 0f));
+            CreateShipPart(PrimitiveType.Cube, "Bridge roof", visuals.transform, new Vector3(0f, 2.93f, 4.06f), new Vector3(2.62f, 0.12f, 2.65f), deckMaterial);
+            CreateTaperedBlock("Central superstructure", visuals.transform, new Vector3(0f, 1.48f, -0.9f), 2.82f, 2.56f, 1.3f, 4.45f, 0.22f, superstructureMaterial);
+            CreateTaperedBlock("Hangar", visuals.transform, new Vector3(0f, 1.7f, -7.1f), 3.05f, 2.68f, 1.78f, 5.45f, 0.18f, superstructureMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Hangar door", visuals.transform, new Vector3(0f, 1.62f, -9.91f), new Vector3(2.38f, 1.3f, 0.08f), deckMaterial);
+            for (int panel = -2; panel <= 2; panel++)
+                CreateShipPart(PrimitiveType.Cube, $"Hangar door seam {panel}", visuals.transform,
+                    new Vector3(panel * 0.43f, 1.62f, -9.958f), new Vector3(0.025f, 1.18f, 0.018f), hullDarkMaterial);
 
-            return root.AddComponent<ShipController>();
+            CreateTaperedBlock("Port funnel", visuals.transform, new Vector3(-0.68f, 3.05f, -1.7f), 0.78f, 0.58f, 1.75f, 1.25f, 0.18f, hullDarkMaterial);
+            CreateTaperedBlock("Starboard funnel", visuals.transform, new Vector3(0.68f, 3.05f, -1.7f), 0.78f, 0.58f, 1.75f, 1.25f, 0.18f, hullDarkMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Port funnel cap", visuals.transform, new Vector3(-0.68f, 3.95f, -1.83f), new Vector3(0.58f, 0.12f, 0.8f), darkMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Starboard funnel cap", visuals.transform, new Vector3(0.68f, 3.95f, -1.83f), new Vector3(0.58f, 0.12f, 0.8f), darkMaterial);
+
+            CreateShipPart(PrimitiveType.Cylinder, "Main mast", visuals.transform, new Vector3(0f, 4.35f, 1.62f), new Vector3(0.12f, 1.65f, 0.12f), hullDarkMaterial);
+            CreateBeam("Port mast brace", visuals.transform, new Vector3(-0.72f, 3.02f, 1.62f), new Vector3(0f, 5.1f, 1.62f), 0.065f, hullDarkMaterial);
+            CreateBeam("Starboard mast brace", visuals.transform, new Vector3(0.72f, 3.02f, 1.62f), new Vector3(0f, 5.1f, 1.62f), 0.065f, hullDarkMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Mast yard", visuals.transform, new Vector3(0f, 4.48f, 1.8f), new Vector3(2.45f, 0.1f, 0.1f), hullDarkMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Main radar panel", visuals.transform, new Vector3(0f, 4.68f, 1.8f), new Vector3(1.72f, 0.78f, 0.16f), windowMaterial, new Vector3(0f, 12f, 0f));
+            GameObject radar = CreateShipPart(PrimitiveType.Cube, "Rotating search radar", visuals.transform, new Vector3(0f, 5.65f, 1.8f), new Vector3(2.45f, 0.1f, 0.32f), darkMaterial);
+            radar.AddComponent<RotatingRadar>();
+            CreateShipPart(PrimitiveType.Sphere, "Forward radome", visuals.transform, new Vector3(0f, 3.78f, 3.3f), new Vector3(0.58f, 0.58f, 0.58f), whiteMaterial);
+            CreateShipPart(PrimitiveType.Sphere, "Aft radome", visuals.transform, new Vector3(0f, 3.25f, -5.5f), new Vector3(0.66f, 0.66f, 0.66f), whiteMaterial);
+            CreateShipPart(PrimitiveType.Cylinder, "Aft mast", visuals.transform, new Vector3(0f, 3.82f, -5.72f), new Vector3(0.085f, 1.05f, 0.085f), hullDarkMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Aft mast yard", visuals.transform, new Vector3(0f, 4.34f, -5.72f), new Vector3(1.7f, 0.07f, 0.08f), hullDarkMaterial);
+            GameObject aftRadar = CreateShipPart(PrimitiveType.Cube, "Aft rotating radar", visuals.transform,
+                new Vector3(0f, 4.65f, -5.72f), new Vector3(1.55f, 0.08f, 0.22f), darkMaterial);
+            aftRadar.AddComponent<RotatingRadar>();
+            CreateShipPart(PrimitiveType.Cylinder, "Forward whip antenna", visuals.transform, new Vector3(-0.72f, 4.18f, 4.25f), new Vector3(0.025f, 1.05f, 0.025f), darkMaterial);
+            CreateShipPart(PrimitiveType.Cylinder, "Aft whip antenna", visuals.transform, new Vector3(0.72f, 4.4f, -6.2f), new Vector3(0.025f, 1.2f, 0.025f), darkMaterial);
+
+            CreateTaperedBlock("127 mm gun turret", visuals.transform, new Vector3(0f, 1.21f, 11.15f), 1.38f, 0.94f, 0.72f, 1.65f, 0.38f, superstructureMaterial);
+            CreateShipPart(PrimitiveType.Cylinder, "127 mm gun barrel", visuals.transform, new Vector3(0f, 1.52f, 12.55f), new Vector3(0.075f, 1.18f, 0.075f), hullDarkMaterial, new Vector3(88f, 0f, 0f));
+
+            for (int row = 0; row < 2; row++)
+            for (int column = 0; column < 4; column++)
+                CreateShipPart(PrimitiveType.Cube, $"VLS cell {row * 4 + column + 1}", visuals.transform,
+                    new Vector3(-0.72f + column * 0.48f, 0.98f, 8.35f + row * 0.5f), new Vector3(0.38f, 0.08f, 0.4f), darkMaterial);
+
+            for (int side = -1; side <= 1; side += 2)
+            {
+                CreateShipPart(PrimitiveType.Cube, side < 0 ? "Port bridge windows" : "Starboard bridge windows", visuals.transform,
+                    new Vector3(side * 1.34f, 2.48f, 4.28f), new Vector3(0.055f, 0.28f, 1.42f), windowMaterial);
+                CreateShipPart(PrimitiveType.Cube, side < 0 ? "Port passage recess" : "Starboard passage recess", visuals.transform,
+                    new Vector3(side * 1.48f, 1.52f, -0.6f), new Vector3(0.055f, 0.48f, 2.7f), hullDarkMaterial);
+                CreateShipPart(PrimitiveType.Cube, side < 0 ? "Port hangar panel" : "Starboard hangar panel", visuals.transform,
+                    new Vector3(side * 1.47f, 1.72f, -7.12f), new Vector3(0.055f, 0.88f, 3.75f), deckMaterial);
+                CreateShipPart(PrimitiveType.Capsule, side < 0 ? "Port lifeboat" : "Starboard lifeboat", visuals.transform,
+                    new Vector3(side * 1.72f, 1.65f, -4.6f), new Vector3(0.3f, 0.82f, 0.3f), orangeMaterial, new Vector3(90f, 0f, 0f));
+                for (int i = 0; i < 2; i++)
+                    CreateShipPart(PrimitiveType.Cube, $"Harpoon canister {side} {i}", visuals.transform,
+                        new Vector3(side * (0.62f + i * 0.5f), 2.15f, -3.45f), new Vector3(0.38f, 0.38f, 1.75f), darkMaterial, new Vector3(-7f, 0f, 0f));
+                CreateShipPart(PrimitiveType.Sphere, side < 0 ? "Port CIWS" : "Starboard CIWS", visuals.transform,
+                    new Vector3(side * 1.38f, 2.85f, -5.6f), new Vector3(0.48f, 0.48f, 0.48f), superstructureMaterial);
+
+                for (int porthole = 0; porthole < 9; porthole++)
+                    CreateShipPart(PrimitiveType.Sphere, $"Borda lombozu {side} {porthole}", visuals.transform,
+                        new Vector3(side * 1.76f, 0.26f, -7.8f + porthole * 1.72f), new Vector3(0.055f, 0.11f, 0.11f), windowMaterial);
+            }
+
+            AddHullNumber(visuals.transform, -1.86f, 10.2f, 90f);
+            AddHullNumber(visuals.transform, 1.86f, 10.2f, -90f);
+            BuildTurkishFlag(visuals.transform);
+
+            BuildHelipadMarking(visuals.transform);
+            BuildDeckRailHints(visuals.transform);
+
+            ShipController controller = root.AddComponent<ShipController>();
+            WakeTrail wake = root.AddComponent<WakeTrail>();
+            wake.Configure(controller, foamMaterial);
+            return controller;
+        }
+
+        private void BuildHelipadMarking(Transform parent)
+        {
+            CreateShipPart(PrimitiveType.Cube, "Helipad H left", parent, new Vector3(-0.42f, 0.9f, -11.4f), new Vector3(0.12f, 0.025f, 1.35f), whiteMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Helipad H right", parent, new Vector3(0.42f, 0.9f, -11.4f), new Vector3(0.12f, 0.025f, 1.35f), whiteMaterial);
+            CreateShipPart(PrimitiveType.Cube, "Helipad H middle", parent, new Vector3(0f, 0.9f, -11.4f), new Vector3(0.78f, 0.025f, 0.12f), whiteMaterial);
+        }
+
+        private void BuildDeckRailHints(Transform parent)
+        {
+            for (int sideIndex = 0; sideIndex < 2; sideIndex++)
+            {
+                float x = sideIndex == 0 ? -1.72f : 1.72f;
+                for (int i = 0; i < 11; i++)
+                {
+                    CreateShipPart(PrimitiveType.Cylinder, "Rail post", parent, new Vector3(x, 1.12f, -12.2f + i * 2.15f), new Vector3(0.028f, 0.2f, 0.028f), whiteMaterial);
+                }
+                CreateBeam(sideIndex == 0 ? "Port upper rail" : "Starboard upper rail", parent,
+                    new Vector3(x, 1.31f, -12.2f), new Vector3(x, 1.31f, 9.25f), 0.018f, whiteMaterial);
+            }
+        }
+
+        private void AddHullNumber(Transform parent, float x, float z, float yRotation)
+        {
+            GameObject label = new("F244 hull number");
+            label.transform.SetParent(parent, false);
+            label.transform.localPosition = new Vector3(x, 0.18f, z);
+            label.transform.localRotation = Quaternion.Euler(0f, yRotation, 0f);
+            TextMesh text = label.AddComponent<TextMesh>();
+            text.text = "F244";
+            text.anchor = TextAnchor.MiddleCenter;
+            text.alignment = TextAlignment.Center;
+            text.fontSize = 96;
+            text.characterSize = 0.075f;
+            text.color = new Color(0.9f, 0.93f, 0.91f);
+            label.AddComponent<HullNumberVisibility>().SideSign = Mathf.Sign(x);
+        }
+
+        private void BuildTurkishFlag(Transform parent)
+        {
+            CreateShipPart(PrimitiveType.Cylinder, "Stern flag pole", parent, new Vector3(0f, 2.22f, -13.75f),
+                new Vector3(0.035f, 1.35f, 0.035f), darkMaterial);
+            GameObject flag = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            flag.name = "Turkish naval ensign";
+            flag.transform.SetParent(parent, false);
+            flag.transform.localPosition = new Vector3(0f, 3.05f, -13.72f);
+            flag.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
+            flag.transform.localScale = new Vector3(1.22f, 0.78f, 1f);
+            Collider flagCollider = flag.GetComponent<Collider>();
+            flagCollider.enabled = false;
+            Destroy(flagCollider);
+            Shader shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Sprites/Default");
+            Material flagMaterial = new(shader) { mainTexture = CreateTurkishFlagTexture() };
+            flag.GetComponent<Renderer>().sharedMaterial = flagMaterial;
+        }
+
+        private Texture2D CreateTurkishFlagTexture()
+        {
+            const int width = 160;
+            const int height = 104;
+            Texture2D texture = new(width, height, TextureFormat.RGBA32, false) { name = "Turkish flag" };
+            Color red = new(0.78f, 0.035f, 0.055f);
+            Vector2 crescentCenter = new(65f, 52f);
+            Vector2 cutoutCenter = new(74f, 52f);
+            Vector2 starCenter = new(98f, 52f);
+            for (int y = 0; y < height; y++)
+            for (int x = 0; x < width; x++)
+            {
+                Vector2 point = new(x, y);
+                bool crescent = Vector2.Distance(point, crescentCenter) < 27f && Vector2.Distance(point, cutoutCenter) > 21f;
+                Vector2 delta = point - starCenter;
+                float angle = Mathf.Atan2(delta.y, delta.x) + Mathf.PI * 0.5f;
+                float starRadius = Mathf.Cos(5f * angle) >= 0f ? 12f : 5f;
+                bool star = delta.magnitude < starRadius;
+                texture.SetPixel(x, y, crescent || star ? Color.white : red);
+            }
+            texture.Apply();
+            return texture;
         }
 
         private void BuildCamera(Transform target)
@@ -95,10 +390,12 @@ namespace Meridian
             GameObject cameraObject = new("Main Camera");
             cameraObject.tag = "MainCamera";
             Camera camera = cameraObject.AddComponent<Camera>();
-            camera.clearFlags = CameraClearFlags.SolidColor;
-            camera.backgroundColor = new Color(0.36f, 0.61f, 0.68f);
-            camera.fieldOfView = 58f;
+            camera.clearFlags = CameraClearFlags.Skybox;
+            camera.fieldOfView = 52f;
             camera.nearClipPlane = 0.2f;
+            camera.farClipPlane = 420f;
+            camera.allowHDR = true;
+            cameraObject.AddComponent<AudioListener>();
             FollowCamera follow = cameraObject.AddComponent<FollowCamera>();
             follow.SetTarget(target);
         }
@@ -107,6 +404,166 @@ namespace Meridian
         {
             PrototypeHud hud = gameObject.AddComponent<PrototypeHud>();
             hud.SetShip(ship);
+        }
+
+        private void CreateWarehouse(string name, Vector3 position, Vector3 scale)
+        {
+            CreateCube(name, position, scale, superstructureMaterial, true);
+            CreateCube(name + " roof", position + Vector3.up * (scale.y * 0.52f), new Vector3(scale.x * 1.04f, 0.45f, scale.z * 1.05f), roofMaterial, false);
+            for (int i = -1; i <= 1; i++)
+            {
+                CreateCube(name + " door", position + new Vector3(i * scale.x * 0.27f, -scale.y * 0.16f, -scale.z * 0.505f), new Vector3(scale.x * 0.18f, scale.y * 0.45f, 0.08f), darkMaterial, false);
+            }
+        }
+
+        private void BuildCrane(Vector3 position)
+        {
+            CreateCube("Crane tower", position + new Vector3(0f, 7f, 0f), new Vector3(1.1f, 14f, 1.1f), orangeMaterial, true);
+            CreateCube("Crane boom", position + new Vector3(-4f, 13.5f, 0f), new Vector3(9f, 0.7f, 0.8f), orangeMaterial, false);
+            CreateCube("Crane cable", position + new Vector3(-7.8f, 9f, 0f), new Vector3(0.12f, 8f, 0.12f), darkMaterial, false);
+        }
+
+        private void BuildLighthouse(Vector3 position)
+        {
+            CreatePrimitiveChild(PrimitiveType.Cylinder, "Lighthouse tower", null, position + Vector3.up * 3f,
+                new Vector3(1.15f, 3f, 1.15f), whiteMaterial, Vector3.zero, true);
+            CreatePrimitiveChild(PrimitiveType.Cylinder, "Lighthouse stripe", null, position + Vector3.up * 3.2f,
+                new Vector3(1.18f, 0.55f, 1.18f), buoyRedMaterial, Vector3.zero, false);
+            CreatePrimitiveChild(PrimitiveType.Cylinder, "Lighthouse gallery", null, position + Vector3.up * 6.25f,
+                new Vector3(1.55f, 0.18f, 1.55f), darkMaterial, Vector3.zero, false);
+
+            GameObject beaconObject = new("Lighthouse beacon");
+            beaconObject.transform.position = position + Vector3.up * 6.8f;
+            Light beacon = beaconObject.AddComponent<Light>();
+            beacon.type = LightType.Point;
+            beacon.color = new Color(1f, 0.86f, 0.46f);
+            beacon.range = 32f;
+            beacon.shadows = LightShadows.None;
+            beaconObject.AddComponent<BeaconPulse>();
+        }
+
+        private Mesh CreateHullMesh()
+        {
+            float[] z = { -14.1f, -12.8f, -7.5f, 1.5f, 9.7f, 13.4f, 15.2f };
+            float[] width = { 1.48f, 1.72f, 1.82f, 1.88f, 1.72f, 1.02f, 0.12f };
+            float[] deckY = { 0.68f, 0.7f, 0.72f, 0.74f, 0.82f, 1.12f, 1.55f };
+            float[] keelY = { -0.55f, -0.82f, -0.98f, -1.02f, -0.9f, -0.62f, 0.2f };
+            List<Vector3> vertices = new();
+            for (int i = 0; i < z.Length; i++)
+            {
+                float keelFactor = i >= z.Length - 2 ? 0.42f : 0.64f;
+                vertices.Add(new Vector3(-width[i], deckY[i], z[i]));
+                vertices.Add(new Vector3(width[i], deckY[i], z[i]));
+                vertices.Add(new Vector3(width[i] * keelFactor, keelY[i], z[i]));
+                vertices.Add(new Vector3(-width[i] * keelFactor, keelY[i], z[i]));
+            }
+
+            List<int> triangles = new();
+            for (int i = 0; i < z.Length - 1; i++)
+            {
+                int a = i * 4;
+                int b = (i + 1) * 4;
+                AddQuad(triangles, a, b, b + 1, a + 1);
+                AddQuad(triangles, a + 1, b + 1, b + 2, a + 2);
+                AddQuad(triangles, a + 2, b + 2, b + 3, a + 3);
+                AddQuad(triangles, a + 3, b + 3, b, a);
+            }
+            AddQuad(triangles, 0, 1, 2, 3);
+            int last = (z.Length - 1) * 4;
+            AddQuad(triangles, last + 3, last + 2, last + 1, last);
+
+            Mesh mesh = new() { name = "TCG Barbaros MEKO 200 TN hull" };
+            mesh.SetVertices(vertices);
+            mesh.SetTriangles(triangles, 0);
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            return mesh;
+        }
+
+        private GameObject CreateTaperedBlock(string name, Transform parent, Vector3 localPosition,
+            float bottomWidth, float topWidth, float height, float length, float frontSlope, Material material)
+        {
+            float bottomHalf = bottomWidth * 0.5f;
+            float topHalf = topWidth * 0.5f;
+            float halfHeight = height * 0.5f;
+            float halfLength = length * 0.5f;
+            Vector3[] vertices =
+            {
+                new(-bottomHalf, -halfHeight, -halfLength), new(bottomHalf, -halfHeight, -halfLength),
+                new(bottomHalf, -halfHeight, halfLength), new(-bottomHalf, -halfHeight, halfLength),
+                new(-topHalf, halfHeight, -halfLength + 0.08f), new(topHalf, halfHeight, -halfLength + 0.08f),
+                new(topHalf, halfHeight, halfLength - frontSlope), new(-topHalf, halfHeight, halfLength - frontSlope)
+            };
+            int[] triangles =
+            {
+                0, 2, 1, 0, 3, 2,
+                4, 6, 5, 4, 7, 6,
+                0, 4, 7, 0, 7, 3,
+                1, 2, 6, 1, 6, 5,
+                3, 7, 6, 3, 6, 2,
+                0, 1, 5, 0, 5, 4
+            };
+            Mesh mesh = new() { name = name + " mesh", vertices = vertices, triangles = triangles };
+            mesh.RecalculateNormals();
+            mesh.RecalculateBounds();
+            GameObject block = new(name);
+            block.transform.SetParent(parent, false);
+            block.transform.localPosition = localPosition;
+            block.AddComponent<MeshFilter>().sharedMesh = mesh;
+            block.AddComponent<MeshRenderer>().sharedMaterial = material;
+            return block;
+        }
+
+        private GameObject CreateBeam(string name, Transform parent, Vector3 start, Vector3 end, float radius, Material material)
+        {
+            GameObject beam = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+            beam.name = name;
+            beam.transform.SetParent(parent, false);
+            Vector3 direction = end - start;
+            beam.transform.localPosition = (start + end) * 0.5f;
+            beam.transform.localRotation = Quaternion.FromToRotation(Vector3.up, direction.normalized);
+            beam.transform.localScale = new Vector3(radius, direction.magnitude * 0.5f, radius);
+            beam.GetComponent<Renderer>().sharedMaterial = material;
+            Collider beamCollider = beam.GetComponent<Collider>();
+            beamCollider.enabled = false;
+            Destroy(beamCollider);
+            return beam;
+        }
+
+        private static void AddQuad(List<int> triangles, int a, int b, int c, int d)
+        {
+            triangles.Add(a);
+            triangles.Add(b);
+            triangles.Add(c);
+            triangles.Add(a);
+            triangles.Add(c);
+            triangles.Add(d);
+        }
+
+        private Texture2D CreateWaveTexture()
+        {
+            const int size = 128;
+            Texture2D texture = new(size, size, TextureFormat.RGB24, false)
+            {
+                name = "Procedural harbor water",
+                wrapMode = TextureWrapMode.Repeat,
+                filterMode = FilterMode.Bilinear
+            };
+            Color deep = new(0.025f, 0.23f, 0.34f);
+            Color light = new(0.08f, 0.43f, 0.52f);
+            for (int y = 0; y < size; y++)
+            {
+                for (int x = 0; x < size; x++)
+                {
+                    float waveA = Mathf.Sin((x + y * 1.7f) * 0.22f);
+                    float waveB = Mathf.Sin((x * 0.47f - y) * 0.13f);
+                    float waveC = Mathf.Sin((x - y * 2.1f) * 0.07f);
+                    float value = Mathf.InverseLerp(-2.5f, 2.5f, waveA + waveB + waveC * 0.5f);
+                    texture.SetPixel(x, y, Color.Lerp(deep, light, value));
+                }
+            }
+            texture.Apply();
+            return texture;
         }
 
         private Material CreateMaterial(Color color, float metallic, float smoothness)
@@ -125,11 +582,41 @@ namespace Meridian
             cube.transform.position = position;
             cube.transform.localScale = scale;
             cube.GetComponent<Renderer>().sharedMaterial = material;
+            if (!keepCollider) Destroy(cube.GetComponent<Collider>());
+            return cube;
+        }
+
+        private GameObject CreateShipPart(PrimitiveType type, string name, Transform parent, Vector3 localPosition,
+            Vector3 localScale, Material material, Vector3? localEuler = null)
+        {
+            return CreatePrimitiveChild(type, name, parent, localPosition, localScale, material, localEuler ?? Vector3.zero, false);
+        }
+
+        private GameObject CreatePrimitiveChild(PrimitiveType type, string name, Transform parent, Vector3 position,
+            Vector3 scale, Material material, Vector3 euler, bool keepCollider)
+        {
+            GameObject part = GameObject.CreatePrimitive(type);
+            part.name = name;
+            if (parent != null)
+            {
+                part.transform.SetParent(parent, false);
+                part.transform.localPosition = position;
+                part.transform.localEulerAngles = euler;
+            }
+            else
+            {
+                part.transform.position = position;
+                part.transform.eulerAngles = euler;
+            }
+            part.transform.localScale = scale;
+            part.GetComponent<Renderer>().sharedMaterial = material;
             if (!keepCollider)
             {
-                Destroy(cube.GetComponent<Collider>());
+                Collider partCollider = part.GetComponent<Collider>();
+                partCollider.enabled = false;
+                Destroy(partCollider);
             }
-            return cube;
+            return part;
         }
     }
 }
