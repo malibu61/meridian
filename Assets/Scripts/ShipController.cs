@@ -28,6 +28,8 @@ namespace Meridian
 
         public float PortThrottle => portTarget;
         public float StarboardThrottle => starboardTarget;
+        public float PortEngineLoad => Mathf.Abs(portActual);
+        public float StarboardEngineLoad => Mathf.Abs(starboardActual);
         public float Rudder => rudderTarget;
         public float SpeedKnots
         {

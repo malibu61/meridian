@@ -11,6 +11,7 @@ namespace Meridian
         private readonly Transform root;
         private readonly Material hull, upper, deck, dark, glass, white, rubber, red;
         private readonly List<MeshFilter> mergeCandidates = new();
+        private Transform portExhaustOutlet, starboardExhaustOutlet;
         private static readonly float[] Stations = { -14.25f, -13f, -10f, -6f, -2f, 2f, 6f, 9f, 11f, 12.8f, 14.2f, 15.1f };
         private static readonly float[] Widths = { 1.43f, 1.65f, 1.79f, 1.84f, 1.85f, 1.85f, 1.79f, 1.62f, 1.33f, 0.94f, 0.45f, 0.025f };
 
@@ -41,6 +42,9 @@ namespace Meridian
             GameObject activity = new("Deck life");
             activity.transform.SetParent(root, false);
             activity.AddComponent<NavalDeckLife>().Build();
+            GameObject exhaust = new("Engine exhaust smoke");
+            exhaust.transform.SetParent(root, false);
+            exhaust.AddComponent<EngineExhaustSmoke>().Configure(portExhaustOutlet,starboardExhaustOutlet);
         }
 
         public static float HalfWidth(float z)
@@ -204,6 +208,9 @@ namespace Meridian
                 OvalCylinder("Funnel body", funnel, new Vector3(0f, 0.68f, 0f), 0.52f, 0.75f, 1.36f, upper);
                 OvalCylinder("Exhaust black band", funnel, new Vector3(0f, 1.40f, 0f), 0.53f, 0.76f, 0.21f, dark);
                 OvalCylinder("Exhaust grille", funnel, new Vector3(0f, 1.52f, 0f), 0.44f, 0.64f, 0.025f, rubber);
+                Transform outlet = new GameObject(side < 0 ? "Port exhaust outlet" : "Starboard exhaust outlet").transform;
+                outlet.SetParent(funnel,false);outlet.localPosition=new Vector3(0f,1.56f,0f);
+                if(side<0)portExhaustOutlet=outlet;else starboardExhaustOutlet=outlet;
             }
         }
 
