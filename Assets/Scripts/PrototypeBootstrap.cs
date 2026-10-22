@@ -22,26 +22,68 @@ namespace Meridian
         private Material whiteMaterial;
         private Material orangeMaterial;
         private Material darkMaterial;
+        private Transform worldRoot;
+        private ShipController playerShip;
+        private FollowCamera followCamera;
+        private Transform shipVisuals;
+        private EnvironmentResources persistentResources;
+        public GameSessionController Session { get; private set; }
 
         private void Awake()
         {
             Application.targetFrameRate = 60;
+            WaterWaves.Reset(SeaStateSettings.Default,Time.time);
+            persistentResources=gameObject.AddComponent<EnvironmentResources>();
             BuildMaterials();
             BuildLighting();
+            CreateWorldRoot("Harbor environment");
             BuildEnvironment();
             ShipController ship = BuildShip();
+            playerShip = ship;
             BuildCamera(ship.transform);
             BuildHud(ship);
+            Session = gameObject.AddComponent<GameSessionController>();
+            Session.Initialize(this, ship, followCamera);
+            GetComponent<PrototypeHud>().SetSession(Session);
+            gameObject.AddComponent<ModeSelectionMenu>().Configure(Session);
+        }
+
+        private void CreateWorldRoot(string title)
+        {
+            worldRoot = new GameObject(title).transform;
+            worldRoot.gameObject.AddComponent<EnvironmentResources>();
+        }
+
+        public void LoadMode(SimulationMode mode, VesselId vessel = VesselId.Barbaros)
+        {
+            if (!GameSessionController.IsAvailable(mode) || !VesselCatalog.IsAvailable(vessel)) return;
+            if (playerShip.Definition.Id != vessel) ApplyVessel(vessel);
+            worldRoot.gameObject.SetActive(false);
+            Destroy(worldRoot.gameObject);
+            CreateWorldRoot(mode == SimulationMode.Harbor ? "Harbor environment" : "Dardanelles prototype environment");
+            if (mode == SimulationMode.Harbor)
+            {
+                BuildEnvironment();
+                playerShip.ResetSimulation(playerShip.Definition.HarborSpawn, Quaternion.identity);
+                RenderSettings.fogStartDistance = 85f; RenderSettings.fogEndDistance = 275f;
+                followCamera.GetComponent<Camera>().farClipPlane = 420f;
+            }
+            else
+            {
+                worldRoot.gameObject.AddComponent<StraitEnvironment>().Build(playerShip.transform, seaMaterial, sandMaterial, grassMaterial, concreteMaterial, whiteMaterial, roofMaterial);
+                playerShip.ResetSimulation(StraitRoute.Point(0), Quaternion.LookRotation(StraitRoute.Direction(0), Vector3.up));
+                RenderSettings.fogStartDistance = 650f; RenderSettings.fogEndDistance = 2300f;
+                followCamera.GetComponent<Camera>().farClipPlane = 2600f;
+            }
+            followCamera.ConfigureVessel(playerShip.Definition);
+            followCamera.SetTarget(playerShip.transform);
+            if (mode == SimulationMode.StraitPassage) followCamera.SetTransitView();
         }
 
         private void BuildMaterials()
         {
-            seaMaterial = CreateMaterial(new Color(0.025f, 0.28f, 0.39f), 0.12f, 0.82f);
-            seaMaterial.mainTexture = CreateWaveTexture();
-            seaMaterial.mainTextureScale = Vector2.one;
-
-            Shader particleShader = Shader.Find("Particles/Standard Unlit") ?? Shader.Find("Sprites/Default");
-            foamMaterial = new Material(particleShader) { color = new Color(0.78f, 0.95f, 1f, 0.62f) };
+            seaMaterial = WaterVisuals.Ocean(persistentResources);
+            foamMaterial = WaterVisuals.Foam(persistentResources);
 
             hullMaterial = CreateMaterial(new Color(0.31f, 0.38f, 0.39f), 0.18f, 0.42f);
             hullDarkMaterial = CreateMaterial(new Color(0.15f, 0.20f, 0.21f), 0.14f, 0.3f);
@@ -74,17 +116,20 @@ namespace Meridian
             Shader skyShader = Shader.Find("Skybox/Procedural");
             if (skyShader != null)
             {
-                Material sky = new(skyShader);
+                Material sky = persistentResources.Own(new Material(skyShader));
                 sky.SetColor("_SkyTint", new Color(0.32f, 0.55f, 0.63f));
                 sky.SetColor("_GroundColor", new Color(0.24f, 0.30f, 0.29f));
                 sky.SetFloat("_AtmosphereThickness", 0.72f);
                 sky.SetFloat("_SunSize", 0.035f);
+                sky.SetFloat("_SunDisk",0);
+                sky.DisableKeyword("_SUNDISK_HIGH_QUALITY");sky.DisableKeyword("_SUNDISK_SIMPLE");sky.EnableKeyword("_SUNDISK_NONE");
                 RenderSettings.skybox = sky;
             }
 
             GameObject sun = new("Sun");
             Light light = sun.AddComponent<Light>();
             light.type = LightType.Directional;
+            RenderSettings.sun=light;
             light.intensity = 1.15f;
             light.color = new Color(1f, 0.91f, 0.74f);
             light.shadows = LightShadows.Soft;
@@ -97,10 +142,16 @@ namespace Meridian
         private void BuildEnvironment()
         {
             GameObject sea = new("Animated Sea");
+            sea.transform.SetParent(worldRoot, false);
             sea.transform.position = new Vector3(0f, -0.72f, 52f);
             sea.AddComponent<MeshFilter>();
             sea.AddComponent<MeshRenderer>();
-            sea.AddComponent<OceanSurface>().Configure(seaMaterial, 300f, 360f, 44);
+            sea.AddComponent<OceanSurface>().Configure(seaMaterial, 300f, 360f, 72);
+            if(playerShip!=null)sea.GetComponent<OceanSurface>().Follow(playerShip.transform);
+            GameObject distant=GameObject.CreatePrimitive(PrimitiveType.Plane);distant.name="Distant harbor water";distant.transform.SetParent(worldRoot,false);
+            distant.transform.position=new Vector3(0,WaterWaves.SeaLevel,0);distant.transform.localScale=new Vector3(350,1,350);
+            Destroy(distant.GetComponent<Collider>());
+            Material distantWater=worldRoot.GetComponent<EnvironmentResources>().Own(new Material(seaMaterial));distantWater.SetFloat("_FarWater",1);distant.GetComponent<Renderer>().sharedMaterial=distantWater;
 
             BuildCoastline();
             BuildHarborBuildings();
@@ -121,10 +172,9 @@ namespace Meridian
             CreateCube("East pier cap", new Vector3(42f, 1.85f, 70f), new Vector3(19f, 0.24f, 83f), whiteMaterial, false);
             CreateCube("Harbor wall", new Vector3(0f, 0.7f, 128f), new Vector3(120f, 2.8f, 9f), concreteMaterial, true);
 
-            Material shoreFoam = CreateMaterial(new Color(0.72f, 0.88f, 0.86f, 0.7f), 0f, 0.35f);
-            CreateCube("West shoreline foam", new Vector3(-44.3f, -0.43f, 70f), new Vector3(1.1f, 0.05f, 185f), shoreFoam, false);
-            CreateCube("East shoreline foam", new Vector3(45.7f, -0.43f, 86f), new Vector3(1.1f, 0.05f, 165f), shoreFoam, false);
-            CreateCube("Harbor wall foam", new Vector3(0f, -0.42f, 122.9f), new Vector3(118f, 0.05f, 0.8f), shoreFoam, false);
+            BuildShoreWash("West shoreline wash",new Vector3(-44.3f,0,-22.5f),new Vector3(-44.3f,0,162.5f),1.8f);
+            BuildShoreWash("East shoreline wash",new Vector3(45.7f,0,3.5f),new Vector3(45.7f,0,168.5f),1.8f);
+            BuildShoreWash("Harbor wall wash",new Vector3(-59,0,122.9f),new Vector3(59,0,122.9f),1.5f);
 
             for (int i = 0; i < 12; i++)
             {
@@ -157,7 +207,7 @@ namespace Meridian
             for (int i = 0; i < 5; i++)
             {
                 CreateCube($"Container red {i}", new Vector3(50f + (i % 2) * 4.2f, 2.4f, 74f + i * 5f), new Vector3(3.8f, 2.2f, 4.5f), buoyRedMaterial, true);
-                CreateCube($"Container blue {i}", new Vector3(55f + (i % 2) * 4.2f, 2.4f, 76f + i * 5f), new Vector3(3.8f, 2.2f, 4.5f), seaMaterial, true);
+                CreateCube($"Container blue {i}", new Vector3(55f + (i % 2) * 4.2f, 2.4f, 76f + i * 5f), new Vector3(3.8f, 2.2f, 4.5f), CreateMaterial(new Color(.08f,.22f,.30f),.05f,.25f), true);
             }
 
             BuildCrane(new Vector3(45f, 2f, 112f));
@@ -213,31 +263,61 @@ namespace Meridian
             collider.center = new Vector3(0f, 0.12f, 0.4f);
             collider.size = new Vector3(3.7f, 1.85f, 29.3f);
 
-            GameObject visuals = new("Visuals");
-            visuals.transform.SetParent(root.transform, false);
-            visuals.AddComponent<ShipVisualMotion>();
-            new BarbarosModelBuilder(visuals.transform).Build();
-            BuildTurkishFlag(visuals.transform);
-
             ShipController controller = root.AddComponent<ShipController>();
+            root.AddComponent<ShipBuoyancy>();
+            playerShip = controller;
+            Object.FindAnyObjectByType<OceanSurface>()?.Follow(root.transform);
+            CreateVesselVisuals(VesselId.Barbaros);
+            controller.ConfigureVessel(VesselCatalog.Get(VesselId.Barbaros));
             root.AddComponent<WakeTrail>().Configure(controller, foamMaterial);
             return controller;
         }
 
+        private void ApplyVessel(VesselId vessel)
+        {
+            if (shipVisuals != null)
+            {
+                shipVisuals.name = "Retired visuals";
+                shipVisuals.gameObject.SetActive(false);
+                Destroy(shipVisuals.gameObject);
+            }
+            VesselDefinition definition = VesselCatalog.Get(vessel);
+            playerShip.name = definition.Name + " " + definition.Pennant;
+            BoxCollider collider = playerShip.GetComponent<BoxCollider>();
+            collider.center = definition.ColliderCenter; collider.size = definition.ColliderSize;
+            playerShip.ConfigureVessel(definition);
+            CreateVesselVisuals(vessel);
+            playerShip.GetComponent<WakeTrail>().Configure(playerShip, foamMaterial);
+        }
 
-        private void BuildTurkishFlag(Transform parent)
+        private void CreateVesselVisuals(VesselId vessel)
+        {
+            shipVisuals = new GameObject("Visuals").transform;
+            shipVisuals.SetParent(playerShip.transform, false);
+            shipVisuals.gameObject.AddComponent<ShipVisualMotion>();
+            if (vessel == VesselId.Anadolu) new AnadoluModelBuilder(shipVisuals).Build();
+            else if(VesselCatalog.Get(vessel).IsSmallCraft)new SmallCraftModelBuilder(shipVisuals,VesselCatalog.Get(vessel)).Build();
+            else new BarbarosModelBuilder(shipVisuals).Build();
+            BuildTurkishFlag(shipVisuals, vessel);
+        }
+
+
+        private void BuildTurkishFlag(Transform parent, VesselId vessel = VesselId.Barbaros)
         {
             GameObject flag = GameObject.CreatePrimitive(PrimitiveType.Quad);
             flag.name = "Turkish naval ensign";
             flag.transform.SetParent(parent, false);
-            flag.transform.localPosition = new Vector3(0f, 2.25f, -14f);
+            VesselDefinition flagVessel=VesselCatalog.Get(vessel);
+            flag.transform.localPosition = flagVessel.IsSmallCraft?new Vector3(0,.57f,-flagVessel.LengthMetres/8+.14f):vessel == VesselId.Anadolu ? new Vector3(0f, 5.2f, -28f) : new Vector3(0f, 2.25f, -14f);
             flag.transform.localRotation = Quaternion.Euler(0f, 90f, 0f);
-            flag.transform.localScale = new Vector3(0.78f, 0.51f, 1f);
+            flag.transform.localScale = new Vector3(0.78f, 0.51f, 1f)*(flagVessel.IsSmallCraft?.50f:1);
             Collider flagCollider = flag.GetComponent<Collider>();
             flagCollider.enabled = false;
             Destroy(flagCollider);
             Shader shader = Shader.Find("Unlit/Texture") ?? Shader.Find("Sprites/Default");
             Material flagMaterial = new(shader) { mainTexture = CreateTurkishFlagTexture() };
+            EnvironmentResources owner = parent.GetComponent<EnvironmentResources>();
+            if (owner != null) { owner.Own(flagMaterial); owner.Own(flagMaterial.mainTexture); }
             flag.GetComponent<Renderer>().sharedMaterial = flagMaterial;
         }
 
@@ -277,6 +357,7 @@ namespace Meridian
             camera.allowHDR = true;
             cameraObject.AddComponent<AudioListener>();
             FollowCamera follow = cameraObject.AddComponent<FollowCamera>();
+            followCamera = follow;
             follow.SetTarget(target);
         }
 
@@ -313,6 +394,7 @@ namespace Meridian
                 new Vector3(1.55f, 0.18f, 1.55f), darkMaterial, Vector3.zero, false);
 
             GameObject beaconObject = new("Lighthouse beacon");
+            beaconObject.transform.SetParent(worldRoot, false);
             beaconObject.transform.position = position + Vector3.up * 6.8f;
             Light beacon = beaconObject.AddComponent<Light>();
             beacon.type = LightType.Point;
@@ -323,36 +405,18 @@ namespace Meridian
         }
 
 
-        private Texture2D CreateWaveTexture()
+        private void BuildShoreWash(string name,Vector3 from,Vector3 to,float width)
         {
-            const int size = 128;
-            Texture2D texture = new(size, size, TextureFormat.RGB24, false)
-            {
-                name = "Procedural harbor water",
-                wrapMode = TextureWrapMode.Repeat,
-                filterMode = FilterMode.Bilinear
-            };
-            Color deep = new(0.025f, 0.23f, 0.34f);
-            Color light = new(0.08f, 0.43f, 0.52f);
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    float waveA = Mathf.Sin((x + y * 1.7f) * 0.22f);
-                    float waveB = Mathf.Sin((x * 0.47f - y) * 0.13f);
-                    float waveC = Mathf.Sin((x - y * 2.1f) * 0.07f);
-                    float value = Mathf.InverseLerp(-2.5f, 2.5f, waveA + waveB + waveC * 0.5f);
-                    texture.SetPixel(x, y, Color.Lerp(deep, light, value));
-                }
-            }
-            texture.Apply();
-            return texture;
+            GameObject wash=new(name);wash.transform.SetParent(worldRoot,false);
+            wash.AddComponent<ShorelineWash>().Configure(from,to,width,foamMaterial);
         }
 
         private Material CreateMaterial(Color color, float metallic, float smoothness)
         {
             Shader shader = Shader.Find("Standard") ?? Shader.Find("Universal Render Pipeline/Lit") ?? Shader.Find("Diffuse");
             Material material = new(shader) { color = color };
+            if (worldRoot != null) worldRoot.GetComponent<EnvironmentResources>().Own(material);
+            else persistentResources.Own(material);
             if (material.HasProperty("_Metallic")) material.SetFloat("_Metallic", metallic);
             if (material.HasProperty("_Glossiness")) material.SetFloat("_Glossiness", smoothness);
             return material;
@@ -362,6 +426,7 @@ namespace Meridian
         {
             GameObject cube = GameObject.CreatePrimitive(PrimitiveType.Cube);
             cube.name = name;
+            cube.transform.SetParent(worldRoot, false);
             cube.transform.position = position;
             cube.transform.localScale = scale;
             cube.GetComponent<Renderer>().sharedMaterial = material;
@@ -388,6 +453,7 @@ namespace Meridian
             }
             else
             {
+                part.transform.SetParent(worldRoot, false);
                 part.transform.position = position;
                 part.transform.eulerAngles = euler;
             }

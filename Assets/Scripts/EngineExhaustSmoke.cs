@@ -33,13 +33,21 @@ namespace Meridian
         private void Start()
         {
             ship=GetComponentInParent<ShipController>();
-            if(ship!=null){port.Reset(ship.PortThrottle,ship.PortEngineLoad);starboard.Reset(ship.StarboardThrottle,ship.StarboardEngineLoad);}
+            if(ship!=null){port.Reset(ship.PortCommandLoad,ship.PortEngineLoad);starboard.Reset(ship.StarboardCommandLoad,ship.StarboardEngineLoad);}
+        }
+
+        public void ResetForMode()
+        {
+            port.Reset(); starboard.Reset();
+            if (!configured) return;
+            portSmoke.Clear(true); starboardSmoke.Clear(true);
+            Apply(portSmoke,port,0f); Apply(starboardSmoke,starboard,0f);
         }
 
         private void Update()
         {
             if(!configured || ship==null)return;
-            Tick(ship.PortThrottle,ship.PortEngineLoad,ship.StarboardThrottle,ship.StarboardEngineLoad,Time.deltaTime);
+            Tick(ship.PortCommandLoad,ship.PortEngineLoad,ship.StarboardCommandLoad,ship.StarboardEngineLoad,Time.deltaTime);
         }
 
         private void Tick(float portCommand,float portActual,float starboardCommand,float starboardActual,float dt)

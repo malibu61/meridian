@@ -9,6 +9,7 @@ namespace Meridian
     {
         private readonly Transform root;
         private readonly NavalDeckLife owner;
+        private readonly EnvironmentResources fallbackOwner;
         private readonly Material grey, panel, glass, rubber, metal, white, red, yellow;
         private readonly List<MeshFilter> parts = new();
 
@@ -16,6 +17,7 @@ namespace Meridian
         {
             root = parent;
             owner = parent.GetComponentInParent<NavalDeckLife>();
+            if (owner == null) fallbackOwner = parent.GetComponentInParent<EnvironmentResources>() ?? parent.gameObject.AddComponent<EnvironmentResources>();
             grey = Paint("Seahawk naval grey", new Color(.50f,.55f,.57f),.28f);
             panel = Paint("Seahawk panel edges", new Color(.25f,.29f,.30f),.2f);
             glass = Paint("Seahawk dark cockpit glazing", new Color(.025f,.075f,.105f),.77f);
@@ -25,6 +27,7 @@ namespace Meridian
             red = Paint("Aircraft national marking red", new Color(.70f,.035f,.04f),.15f);
             yellow = Paint("Wheel chocks and blade tips", new Color(.83f,.58f,.10f),.15f);
             if (owner != null) foreach (Material m in new[] { grey,panel,glass,rubber,metal,white,red,yellow }) owner.OwnAircraftMaterial(m);
+            else foreach (Material m in new[] { grey,panel,glass,rubber,metal,white,red,yellow }) fallbackOwner.Own(m);
         }
 
         public void Build()
@@ -179,6 +182,7 @@ namespace Meridian
         {
             Mesh mesh=new(){name=name};mesh.SetVertices(v);mesh.SetTriangles(t,0);mesh.RecalculateNormals();mesh.RecalculateBounds();
             if(owner!=null)owner.OwnAircraftMesh(mesh);
+            else fallbackOwner.Own(mesh);
             GameObject go=new(name);go.transform.SetParent(root,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterial=m;
             parts.Add(go.GetComponent<MeshFilter>());
         }
@@ -228,6 +232,7 @@ namespace Meridian
             {
                 Mesh mesh=new(){name="Seahawk combined "+entry.Key.name,indexFormat=UnityEngine.Rendering.IndexFormat.UInt32};mesh.CombineMeshes(entry.Value.ToArray());
                 if(owner!=null)owner.OwnAircraftMesh(mesh);
+                else fallbackOwner.Own(mesh);
                 GameObject go=new(mesh.name);go.transform.SetParent(root,false);go.AddComponent<MeshFilter>().sharedMesh=mesh;go.AddComponent<MeshRenderer>().sharedMaterial=entry.Key;
             }
             foreach(MeshFilter part in parts){part.gameObject.SetActive(false);Object.Destroy(part.gameObject);}

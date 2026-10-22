@@ -1,0 +1,6 @@
+Ruzgar activeRenderers=108 vertices=127707 effects=9
+Kumkale activeRenderers=100 vertices=122124 effects=7
+stage=2 Ruzgar forward=True travel=4,695 speed=13,93
+stage=3 Ruzgar forward=False travel=-0,711 speed=2,13
+stage=4 Kumkale forward=True travel=2,039 speed=6,41
+stage=5 Kumkale forward=False travel=-0,400 speed=1,28

@@ -1,0 +1,39 @@
+speed Barbaros command=1,00 measured=31,999 target=32,000 knots
+speed Anadolu command=1,00 measured=20,999 target=21,000 knots
+speed Ruzgar command=1,00 measured=40,999 target=41,000 knots
+speed Kumkale command=1,00 measured=24,999 target=25,000 knots
+speed Barbaros command=-1,00 measured=12,008 target=12,160 knots
+speed Anadolu command=-1,00 measured=6,113 target=6,300 knots
+speed Ruzgar command=-1,00 measured=13,705 target=13,940 knots
+speed Kumkale command=-1,00 measured=9,903 target=10,000 knots
+speed Ruzgar command=0,20 measured=5,971 target=5,984 knots
+speed Ruzgar command=0,40 measured=14,534 target=14,535 knots
+speed Ruzgar command=0,60 measured=23,308 target=23,309 knots
+turn Barbaros sign=-1 tactical=468,54m diameter/L=3,998 advance/L=3,284 heel=-5,243deg radialError=%0,33
+turn Barbaros sign=1 tactical=468,54m diameter/L=3,998 advance/L=3,284 heel=5,237deg radialError=%0,34
+turn Anadolu sign=-1 tactical=980,50m diameter/L=4,248 advance/L=2,795 heel=-0,951deg radialError=%0,08
+turn Anadolu sign=1 tactical=980,49m diameter/L=4,248 advance/L=2,795 heel=0,950deg radialError=%0,08
+turn Ruzgar sign=-1 tactical=206,93m diameter/L=3,578 advance/L=4,024 heel=-15,959deg radialError=%0,20
+turn Ruzgar sign=1 tactical=206,96m diameter/L=3,578 advance/L=4,024 heel=15,978deg radialError=%0,24
+turn Kumkale sign=-1 tactical=215,21m diameter/L=3,782 advance/L=3,554 heel=-6,565deg radialError=%0,08
+turn Kumkale sign=1 tactical=215,18m diameter/L=3,782 advance/L=3,554 heel=6,648deg radialError=%0,08
+waves Barbaros level=5 from=0 peak=0,020 rollRms=0,003 pitchPeak=6,476deg
+waves Barbaros level=5 from=90 peak=9,382 rollRms=5,947 pitchPeak=1,833deg
+waves Barbaros level=5 from=180 peak=0,020 rollRms=0,003 pitchPeak=6,477deg
+waves Barbaros level=5 from=270 peak=9,377 rollRms=5,946 pitchPeak=1,831deg
+waves Anadolu level=5 from=0 peak=0,000 rollRms=0,000 pitchPeak=0,680deg
+waves Anadolu level=5 from=90 peak=1,409 rollRms=0,904 pitchPeak=0,447deg
+waves Anadolu level=5 from=180 peak=0,000 rollRms=0,000 pitchPeak=0,680deg
+waves Anadolu level=5 from=270 peak=1,409 rollRms=0,904 pitchPeak=0,447deg
+waves Ruzgar level=5 from=0 peak=0,601 rollRms=0,303 pitchPeak=11,892deg
+waves Ruzgar level=5 from=90 peak=34,683 rollRms=17,607 pitchPeak=5,406deg
+waves Ruzgar level=5 from=180 peak=0,601 rollRms=0,303 pitchPeak=11,892deg
+waves Ruzgar level=5 from=270 peak=34,683 rollRms=17,607 pitchPeak=5,406deg
+waves Kumkale level=5 from=0 peak=0,510 rollRms=0,260 pitchPeak=11,965deg
+waves Kumkale level=5 from=90 peak=33,148 rollRms=17,269 pitchPeak=6,713deg
+waves Kumkale level=5 from=180 peak=0,510 rollRms=0,260 pitchPeak=11,965deg
+waves Kumkale level=5 from=270 peak=33,148 rollRms=17,269 pitchPeak=6,713deg
+waves Ruzgar level=1 from=90 peak=3,761 rollRms=2,117 pitchPeak=0,179deg
+waves Ruzgar level=2 from=90 peak=8,575 rollRms=4,700 pitchPeak=0,488deg
+waves Ruzgar level=3 from=90 peak=16,585 rollRms=9,023 pitchPeak=1,216deg
+waves Ruzgar level=4 from=90 peak=25,772 rollRms=13,882 pitchPeak=2,815deg

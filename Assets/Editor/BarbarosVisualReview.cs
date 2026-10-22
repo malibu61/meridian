@@ -63,6 +63,8 @@ namespace Meridian.Editor
         {
             ShipController ship = Object.FindAnyObjectByType<ShipController>();
             if (ship == null) { Debug.LogWarning("Enter Play mode before capturing the exterior review."); return; }
+            if (ship.Definition.Id != VesselId.Barbaros)
+            { Debug.LogWarning("Barbaros review is scoped to F-244. Use Vessels - Capture Anadolu for L-400."); return; }
             Transform visuals = ship.transform.Find("Visuals");
             if (visuals != null)
             {

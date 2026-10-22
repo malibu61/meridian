@@ -1,302 +1,170 @@
-using System;
 using UnityEngine;
-
+using static Meridian.MaritimeUiTheme;
 namespace Meridian
 {
-    public sealed class PrototypeHud : MonoBehaviour
+    public sealed class PrototypeHud:MonoBehaviour
     {
-        private static readonly Color PanelColor = new(0.025f, 0.105f, 0.135f, 0.94f);
-        private static readonly Color PanelLightColor = new(0.045f, 0.17f, 0.21f, 0.94f);
-        private static readonly Color BorderColor = new(0.28f, 0.58f, 0.63f, 0.55f);
-        private static readonly Color AccentColor = new(1f, 0.72f, 0.2f, 1f);
-        private static readonly Color TextColor = new(0.91f, 0.97f, 0.98f, 1f);
-        private static readonly Color MutedColor = new(0.62f, 0.76f, 0.79f, 1f);
-
         private ShipController ship;
-        private GUIStyle brandStyle;
-        private GUIStyle metricLabelStyle;
-        private GUIStyle metricValueStyle;
-        private GUIStyle controlLabelStyle;
-        private GUIStyle controlValueStyle;
-        private GUIStyle engineTrackStyle;
-        private GUIStyle engineThumbStyle;
-        private GUIStyle rudderTrackStyle;
-        private GUIStyle rudderThumbStyle;
-        private GUIStyle stopButtonStyle;
-        private GUIStyle panelStyle;
-        private GUIStyle panelLightStyle;
-        private Texture2D panelTexture;
-        private Texture2D panelLightTexture;
-        private Texture2D borderTexture;
-        private Texture2D trackTexture;
-        private Texture2D accentTexture;
-        private Texture2D stopTexture;
-        private Texture2D stopPressedTexture;
-        private Texture2D forwardZoneTexture;
-        private Texture2D reverseZoneTexture;
-
-        public void SetShip(ShipController controller) => ship = controller;
-
+        private ShipBuoyancy buoyancy;
+        private GameSessionController session;
+        private MaritimeUiTheme ui;
+        private readonly HelmPointerRouter pointers=new();
+        private readonly float[] nextKeyRepeat=new float[5];
+        private VesselId lastVessel;
+        private bool resetMouse;
+        public void SetShip(ShipController controller){ship=controller;buoyancy=controller.GetComponent<ShipBuoyancy>();}
+        public float RollDegrees=>buoyancy!=null?buoyancy.RollDegrees:0;
+        // Positive roll tilts the ship's up vector to port; negative is starboard.
+        public static string RollSide(float degrees)=>Mathf.Abs(degrees)<.05f?"DENGE":degrees>0?"İSKELE":"SANCAK";
+        public void SetSession(GameSessionController controller)=>session=controller;
+        private bool CanControl=>ship!=null&&(session==null||session.CanControl);
         private void Update()
         {
-            if (ship == null) return;
-
-            float step = 0.55f * Time.deltaTime;
-            if (Input.GetKey(KeyCode.W))
+            if(ship!=null&&lastVessel!=ship.Definition.Id){lastVessel=ship.Definition.Id;pointers.Clear();System.Array.Clear(nextKeyRepeat,0,nextKeyRepeat.Length);resetMouse=true;}
+            if(!CanControl){pointers.Clear();return;}
+            ReadKeyboard();HelmLayout layout=HelmLayout.Current;
+            for(int i=0;i<Input.touchCount;i++)
             {
-                ship.SetPortThrottle(ship.PortThrottle + step);
-                ship.SetStarboardThrottle(ship.StarboardThrottle + step);
+                Touch touch=Input.GetTouch(i);Vector2 point=layout.FromScreen(touch.position);
+                if(touch.phase==TouchPhase.Ended||touch.phase==TouchPhase.Canceled){pointers.End(touch.fingerId);continue;}
+                if(touch.phase==TouchPhase.Began)pointers.Begin(touch.fingerId,HelmPointerRouter.Hit(layout,point));
+                if(pointers.TryGet(touch.fingerId,out int control))ApplyPointer(layout,point,control);
             }
-            if (Input.GetKey(KeyCode.S))
-            {
-                ship.SetPortThrottle(ship.PortThrottle - step);
-                ship.SetStarboardThrottle(ship.StarboardThrottle - step);
-            }
-            if (Input.GetKey(KeyCode.Q)) ship.SetPortThrottle(ship.PortThrottle + step);
-            if (Input.GetKey(KeyCode.A)) ship.SetPortThrottle(ship.PortThrottle - step);
-            if (Input.GetKey(KeyCode.E)) ship.SetStarboardThrottle(ship.StarboardThrottle + step);
-            if (Input.GetKey(KeyCode.D)) ship.SetStarboardThrottle(ship.StarboardThrottle - step);
-
-            float rudderStep = 0.8f * Time.deltaTime;
-            if (Input.GetKey(KeyCode.LeftArrow)) ship.SetRudder(ship.Rudder - rudderStep);
-            if (Input.GetKey(KeyCode.RightArrow)) ship.SetRudder(ship.Rudder + rudderStep);
-            if (Input.GetKeyDown(KeyCode.DownArrow)) ship.SetRudder(0f);
-            if (Input.GetKeyDown(KeyCode.Space)) ship.EmergencyStop();
         }
-
+        private void ReadKeyboard()
+        {
+            Repeat(0,KeyCode.W,KeyCode.S);Repeat(1,KeyCode.Q,KeyCode.A);Repeat(2,KeyCode.E,KeyCode.D);
+            if(ship.Definition.HasFourEngines){Repeat(3,KeyCode.Z,KeyCode.X);Repeat(4,KeyCode.C,KeyCode.V);}
+            float step=.8f*Time.deltaTime;
+            if(Input.GetKey(KeyCode.LeftArrow))ship.SetRudder(ship.Rudder-step);
+            if(Input.GetKey(KeyCode.RightArrow))ship.SetRudder(ship.Rudder+step);
+            if(Input.GetKeyDown(KeyCode.DownArrow))ship.SetRudder(0);
+            if(Input.GetKeyDown(KeyCode.Space)){ship.EmergencyStop();pointers.Clear();}
+        }
+        private void Repeat(int channel,KeyCode ahead,KeyCode astern)
+        {
+            int direction=(Input.GetKey(ahead)?1:0)-(Input.GetKey(astern)?1:0);
+            if(direction==0){nextKeyRepeat[channel]=0;return;}
+            if(!Input.GetKeyDown(ahead)&&!Input.GetKeyDown(astern)&&Time.unscaledTime<nextKeyRepeat[channel])return;
+            nextKeyRepeat[channel]=Time.unscaledTime+.16f;
+            if(channel==0)
+            {
+                for(int i=0;i<ship.EngineCount;i++)ship.SetEngineThrottle(i,ThrottleDetents.Step(ship.GetEngineThrottle(i),direction));
+            }
+            else {int engine=channel-1;ship.SetEngineThrottle(engine,ThrottleDetents.Step(ship.GetEngineThrottle(engine),direction));}
+        }
+        private void ApplyPointer(HelmLayout layout,Vector2 point,int control)
+        {
+            if(control==3)
+            {
+                Rect rail=HelmLayout.SteeringRail(layout.Rudder);ship.SetRudder(Mathf.Clamp((point.x-rail.x)/rail.width*2f-1f,-1,1));return;
+            }
+            if(control>3&&!layout.FourEngines)return;
+            Rect panel=control==0?layout.Port:control==1?layout.Starboard:control==4?layout.PortInner:control==5?layout.StarboardInner:layout.Master;
+            Rect engineRail=HelmLayout.Rail(panel);
+            float value=ThrottleDetents.FromTravel(1f-Mathf.Clamp01((point.y-engineRail.y)/engineRail.height));
+            if(control==2)ship.SetCombinedThrottle(value);else ship.SetEngineThrottle(control<2?control:control-2,value);
+        }
         private void OnGUI()
         {
-            if (ship == null) return;
-
-            EnsureStyles();
-            UpdateFontSizes();
-
-            float margin = Mathf.Clamp(Screen.width * 0.012f, 8f, 22f);
-            float headerHeight = Mathf.Clamp(Screen.height * 0.16f, 58f, 104f);
-            DrawTelemetryBar(new Rect(margin, margin, Screen.width - margin * 2f, headerHeight));
-
-            float engineWidth = Mathf.Clamp(Screen.width * 0.135f, 96f, 178f);
-            float engineHeight = Mathf.Clamp(Screen.height * 0.52f, 168f, 360f);
-            float bottom = Screen.height - margin;
-            Rect portArea = new(margin, bottom - engineHeight, engineWidth, engineHeight);
-            Rect starboardArea = new(Screen.width - margin - engineWidth, bottom - engineHeight, engineWidth, engineHeight);
-            DrawEngineControl(portArea, "İSKELE", ship.PortThrottle, ship.SetPortThrottle);
-            DrawEngineControl(starboardArea, "SANCAK", ship.StarboardThrottle, ship.SetStarboardThrottle);
-
-            float availableCenter = Screen.width - (engineWidth + margin) * 2f - margin * 2f;
-            float rudderWidth = Mathf.Min(Screen.width * 0.46f, availableCenter);
-            float rudderHeight = Mathf.Clamp(Screen.height * 0.25f, 88f, 166f);
-            Rect rudderArea = new((Screen.width - rudderWidth) * 0.5f, bottom - rudderHeight, rudderWidth, rudderHeight);
-            DrawRudderControl(rudderArea);
-
-            if (Screen.height >= 620f)
+            if(!CanControl)return;
+            ui??=new MaritimeUiTheme();GUI.depth=-10;
+            if(resetMouse){GUIUtility.hotControl=0;resetMouse=false;}
+            HelmLayout layout=HelmLayout.Current;ReadMouse(layout);
+            Matrix4x4 previous=GUI.matrix;GUI.matrix=Matrix4x4.TRS(layout.Offset,Quaternion.identity,Vector3.one*layout.Scale);
+            try
             {
-                GUI.Label(new Rect((Screen.width - 620f) * 0.5f, margin + headerHeight + 7f, 620f, 24f),
-                    "SÜRÜKLE: KAMERA   •   W/S İKİ MAKİNE   •   Q/A İSKELE   •   E/D SANCAK   •   ←/→ DÜMEN",
-                    metricLabelStyle);
+                DrawHeader(layout);RollGauge.Draw(ui,layout.RollInstrument,RollDegrees);
+                DrawEngine(layout.Port,layout.FourEngines?"İSKELE DIŞ":"İSKELE",ship.PortThrottle,false);
+                DrawEngine(layout.Starboard,layout.FourEngines?"SANCAK DIŞ":"SANCAK",ship.StarboardThrottle,false);
+                if(layout.FourEngines){DrawEngine(layout.PortInner,"İSK. İÇ",ship.GetEngineThrottle(2),false);DrawEngine(layout.StarboardInner,"SANC. İÇ",ship.GetEngineThrottle(3),false);}
+                DrawEngine(layout.Master,"ORTAK GAZ",ship.CombinedThrottle,true);DrawRudder(layout.Rudder);
             }
+            finally{GUI.matrix=previous;}
         }
-
-        private void DrawTelemetryBar(Rect area)
+        private void ReadMouse(HelmLayout layout)
         {
-            DrawPanel(area, false);
-            float brandWidth = area.width * 0.26f;
-            float metricWidth = (area.width - brandWidth) / 4f;
-
-            GUI.Label(new Rect(area.x + 16f, area.y + 8f, brandWidth - 22f, area.height - 16f), "TCG BARBAROS  •  F-244", brandStyle);
-            DrawMetric(new Rect(area.x + brandWidth, area.y, metricWidth, area.height), "SÜRAT", $"{ship.SpeedKnots:0.0} kn");
-            DrawMetric(new Rect(area.x + brandWidth + metricWidth, area.y, metricWidth, area.height), "BAŞ", $"{ship.Heading:000}°");
-            DrawMetric(new Rect(area.x + brandWidth + metricWidth * 2f, area.y, metricWidth, area.height), "ROTA", $"{ship.CourseOverGround:000}°");
-            DrawMetric(new Rect(area.x + brandWidth + metricWidth * 3f, area.y, metricWidth, area.height), "MAKİNE", GetEngineState());
-
-            for (int i = 0; i < 4; i++)
+            int captureId=GUIUtility.GetControlID(630184,FocusType.Passive);
+            // Touch is read directly per finger, never duplicated through Unity's simulated mouse.
+            if(Input.touchCount>0)return;
+            Event e=Event.current;Vector2 point=layout.FromGui(e.mousePosition);const int mouse=-1000;
+            if(e.type==EventType.MouseDown&&e.button==0)
             {
-                float x = area.x + brandWidth + metricWidth * i;
-                GUI.DrawTexture(new Rect(x, area.y + 12f, 1f, area.height - 24f), borderTexture);
+                int hit=HelmPointerRouter.Hit(layout,point);
+                if(pointers.Begin(mouse,hit)){GUIUtility.hotControl=captureId;ApplyPointer(layout,point,hit);e.Use();}
             }
+            else if(e.type==EventType.MouseDrag&&pointers.TryGet(mouse,out int control)){ApplyPointer(layout,point,control);e.Use();}
+            else if(e.type==EventType.MouseUp&&pointers.TryGet(mouse,out _)){pointers.End(mouse);GUIUtility.hotControl=0;e.Use();}
         }
-
-        private void DrawMetric(Rect area, string label, string value)
+        private void DrawHeader(HelmLayout layout)
         {
-            GUI.Label(new Rect(area.x + 8f, area.y + 7f, area.width - 16f, area.height * 0.36f), label, metricLabelStyle);
-            GUI.Label(new Rect(area.x + 8f, area.y + area.height * 0.37f, area.width - 16f, area.height * 0.5f), value, metricValueStyle);
+            Rect r=layout.Header;
+            ui.Surface(r);
+            if(session!=null&&GUI.Button(new Rect(r.x+12,r.y+16,88,48),"MENÜ",ui.Button)){pointers.Clear();session.OpenMenu();GUIUtility.ExitGUI();}
+            ui.Text(new Rect(r.x+120,r.y+13,240,22),ship.Definition.Name,19,Ink,bold:true);
+            ui.Text(new Rect(r.x+120,r.y+40,240,20),ship.Definition.Pennant+"   /   SEYİR KUMANDASI",12,Muted);
+            Metric(layout.HeaderMetric(0),"SÜRAT",$"{ship.SpeedKnots:0.0}","kn");
+            Metric(layout.HeaderMetric(1),"BAŞ",$"{ship.Heading:000}","°");
+            Metric(layout.HeaderMetric(2),"ROTA",$"{ship.CourseOverGround:000}","°");
+            Rect roll=layout.HeaderMetric(3);float angle=RollDegrees;
+            Fill(new Rect(roll.x-14,roll.y+20,1,roll.height-40),new Color(.2f,.27f,.33f));
+            ui.Text(new Rect(roll.x,roll.y+12,roll.width-10,18),"YALPA",11,Muted);
+            ui.Text(new Rect(roll.x,roll.y+32,roll.width-10,27),$"{Mathf.Abs(angle):0.0} °",22,Ink,bold:true);
+            ui.Text(new Rect(roll.x,roll.y+61,roll.width-10,14),RollSide(angle),10,Teal,bold:true);
+            string state=ship.AllEnginesSynchronized?(ship.CombinedThrottle==0?"STOP":ship.CombinedThrottle>0?"İLERİ":"TORNİSTAN"):"AYRI";
+            Metric(layout.HeaderMetric(4),"MAKİNE",state,"");
         }
-
-        private void DrawEngineControl(Rect area, string label, float value, Action<float> setter)
+        private void Metric(Rect r,string label,string value,string unit)
         {
-            DrawPanel(area, true);
-            GUI.Label(new Rect(area.x + 8f, area.y + 7f, area.width - 16f, 24f), label, controlLabelStyle);
-            GUI.Label(new Rect(area.x + 8f, area.y + 31f, area.width - 16f, 32f), $"{value * 100f:+0;-0;0}%", controlValueStyle);
-
-            float sliderTop = area.y + 68f;
-            float sliderBottom = area.yMax - 18f;
-            float sliderHeight = Mathf.Max(70f, sliderBottom - sliderTop);
-            GUI.DrawTexture(new Rect(area.center.x - 8f, sliderTop, 16f, sliderHeight * 0.5f), forwardZoneTexture);
-            GUI.DrawTexture(new Rect(area.center.x - 8f, sliderTop + sliderHeight * 0.5f, 16f, sliderHeight * 0.5f), reverseZoneTexture);
-            float newValue = GUI.VerticalSlider(new Rect(area.center.x - 10f, sliderTop, 20f, sliderHeight), value, 1f, -1f, engineTrackStyle, engineThumbStyle);
-            setter(newValue);
-
-            GUI.Label(new Rect(area.x + 5f, sliderTop - 4f, area.width * 0.42f, 20f), "İLERİ", metricLabelStyle);
-            GUI.Label(new Rect(area.x + 5f, sliderTop + sliderHeight * 0.5f - 10f, area.width * 0.42f, 20f), "STOP", metricLabelStyle);
-            GUI.Label(new Rect(area.x + 5f, sliderBottom - 18f, area.width * 0.44f, 20f), "TORN.", metricLabelStyle);
+            Fill(new Rect(r.x-14,r.y+20,1,r.height-40),new Color(.2f,.27f,.33f));
+            ui.Text(new Rect(r.x,r.y+12,r.width-10,18),label,11,Muted);
+            ui.Text(new Rect(r.x,r.y+33,r.width-10,34),value+(unit==""?"":" "+unit),22,Ink,bold:true);
         }
-
-        private void DrawRudderControl(Rect area)
+        private void DrawEngine(Rect r,string title,float value,bool master)
         {
-            DrawPanel(area, true);
-            GUI.Label(new Rect(area.x + 12f, area.y + 7f, area.width - 24f, 26f), "DÜMEN", controlLabelStyle);
-            GUI.Label(new Rect(area.x + 12f, area.y + 30f, area.width - 24f, 30f), $"{ship.Rudder * 35f:+0;-0;0}°", controlValueStyle);
-
-            float sliderY = area.y + area.height * 0.48f;
-            float newRudder = GUI.HorizontalSlider(new Rect(area.x + 26f, sliderY, area.width - 52f, 22f), ship.Rudder, -1f, 1f, rudderTrackStyle, rudderThumbStyle);
-            ship.SetRudder(newRudder);
-
-            GUI.Label(new Rect(area.x + 18f, sliderY + 19f, area.width * 0.3f, 20f), "İSKELE", metricLabelStyle);
-            GUI.Label(new Rect(area.center.x - area.width * 0.15f, sliderY + 19f, area.width * 0.3f, 20f), "0°", metricLabelStyle);
-            GUI.Label(new Rect(area.xMax - area.width * 0.3f - 18f, sliderY + 19f, area.width * 0.3f, 20f), "SANCAK", metricLabelStyle);
-
-            float buttonHeight = Mathf.Clamp(area.height * 0.24f, 25f, 38f);
-            Rect stopRect = new(area.center.x - area.width * 0.23f, area.yMax - buttonHeight - 8f, area.width * 0.46f, buttonHeight);
-            if (GUI.Button(stopRect, "ACİL STOP", stopButtonStyle)) ship.EmergencyStop();
-        }
-
-        private string GetEngineState()
-        {
-            float average = (ship.PortThrottle + ship.StarboardThrottle) * 0.5f;
-            if (Mathf.Abs(average) < 0.03f) return "STOP";
-            return average > 0f ? "İLERİ" : "TORNİSTAN";
-        }
-
-        private void DrawPanel(Rect area, bool light)
-        {
-            GUI.Box(area, GUIContent.none, light ? panelLightStyle : panelStyle);
-        }
-
-        private void EnsureStyles()
-        {
-            if (panelTexture != null) return;
-
-            panelTexture = CreateRoundedTexture(64, PanelColor, BorderColor, 13f, 2f);
-            panelLightTexture = CreateRoundedTexture(64, PanelLightColor, BorderColor, 13f, 2f);
-            borderTexture = CreateTexture(BorderColor);
-            trackTexture = CreateRoundedTexture(32, new Color(0.025f, 0.055f, 0.07f, 1f), BorderColor, 9f, 1f);
-            accentTexture = CreateCircleTexture(32, AccentColor, new Color(1f, 0.88f, 0.56f, 1f));
-            stopTexture = CreateRoundedTexture(48, new Color(0.63f, 0.075f, 0.07f, 1f), new Color(1f, 0.35f, 0.28f, 0.8f), 12f, 2f);
-            stopPressedTexture = CreateRoundedTexture(48, new Color(0.88f, 0.16f, 0.12f, 1f), new Color(1f, 0.66f, 0.55f, 0.9f), 12f, 2f);
-            forwardZoneTexture = CreateRoundedTexture(24, new Color(0.15f, 0.62f, 0.42f, 0.23f), Color.clear, 8f, 0f);
-            reverseZoneTexture = CreateRoundedTexture(24, new Color(0.86f, 0.24f, 0.15f, 0.2f), Color.clear, 8f, 0f);
-
-            panelStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(15, 15, 15, 15) };
-            panelStyle.normal.background = panelTexture;
-            panelLightStyle = new GUIStyle(GUI.skin.box) { border = new RectOffset(15, 15, 15, 15) };
-            panelLightStyle.normal.background = panelLightTexture;
-
-            brandStyle = NewLabelStyle(TextAnchor.MiddleLeft, TextColor, FontStyle.Bold);
-            metricLabelStyle = NewLabelStyle(TextAnchor.MiddleCenter, MutedColor, FontStyle.Normal);
-            metricValueStyle = NewLabelStyle(TextAnchor.MiddleCenter, TextColor, FontStyle.Bold);
-            controlLabelStyle = NewLabelStyle(TextAnchor.MiddleCenter, TextColor, FontStyle.Bold);
-            controlValueStyle = NewLabelStyle(TextAnchor.MiddleCenter, AccentColor, FontStyle.Bold);
-
-            engineTrackStyle = new GUIStyle(GUI.skin.verticalSlider) { fixedWidth = 7f };
-            engineTrackStyle.normal.background = trackTexture;
-            engineThumbStyle = new GUIStyle(GUI.skin.verticalSliderThumb) { fixedWidth = 24f, fixedHeight = 24f };
-            engineThumbStyle.normal.background = accentTexture;
-            engineThumbStyle.hover.background = accentTexture;
-            engineThumbStyle.active.background = accentTexture;
-
-            rudderTrackStyle = new GUIStyle(GUI.skin.horizontalSlider) { fixedHeight = 7f };
-            rudderTrackStyle.normal.background = trackTexture;
-            rudderThumbStyle = new GUIStyle(GUI.skin.horizontalSliderThumb) { fixedWidth = 24f, fixedHeight = 24f };
-            rudderThumbStyle.normal.background = accentTexture;
-            rudderThumbStyle.hover.background = accentTexture;
-            rudderThumbStyle.active.background = accentTexture;
-
-            stopButtonStyle = new GUIStyle(GUI.skin.button) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
-            stopButtonStyle.border = new RectOffset(13, 13, 13, 13);
-            stopButtonStyle.normal.background = stopTexture;
-            stopButtonStyle.hover.background = stopPressedTexture;
-            stopButtonStyle.active.background = stopPressedTexture;
-            stopButtonStyle.normal.textColor = Color.white;
-            stopButtonStyle.hover.textColor = Color.white;
-            stopButtonStyle.active.textColor = Color.white;
-        }
-
-        private void UpdateFontSizes()
-        {
-            int baseSize = Mathf.Clamp(Mathf.RoundToInt(Screen.height * 0.026f), 11, 22);
-            brandStyle.fontSize = Mathf.Clamp(baseSize + 3, 14, 24);
-            metricLabelStyle.fontSize = baseSize;
-            metricValueStyle.fontSize = Mathf.Clamp(baseSize + 4, 15, 27);
-            controlLabelStyle.fontSize = Mathf.Clamp(baseSize + 1, 13, 24);
-            controlValueStyle.fontSize = Mathf.Clamp(baseSize + 5, 17, 30);
-            stopButtonStyle.fontSize = Mathf.Clamp(baseSize, 12, 21);
-        }
-
-        private static GUIStyle NewLabelStyle(TextAnchor alignment, Color color, FontStyle fontStyle)
-        {
-            return new GUIStyle(GUI.skin.label)
+            bool linked=ship.AllEnginesSynchronized,compact=r.height<320,narrow=r.width<135;Color color=master?Teal:value<0?Red:Amber;
+            ui.Surface(r);Fill(new Rect(r.x+12,r.y+17,3,16),color);ui.Text(new Rect(r.x+22,r.y+13,r.width-28,22),title,narrow?12:14,Ink,bold:true);
+            string text=master&&!linked?"AYRI":$"{value*100:+0;-0;0}%";
+            ui.Text(new Rect(r.x+10,r.y+(compact?35:42),r.width-20,compact?28:40),text,narrow?24:29,master&&!linked?Muted:color,TextAnchor.MiddleCenter,true);
+            Rect rail=HelmLayout.Rail(r);float neutral=rail.y+rail.height*2f/3f;
+            Fill(new Rect(rail.center.x-4,rail.y,8,rail.height),new Color(.015f,.025f,.04f));
+            Fill(new Rect(rail.center.x-1,rail.y,2,neutral-rail.y),new Color(.13f,.3f,.29f));
+            Fill(new Rect(rail.center.x-1,neutral,2,rail.yMax-neutral),new Color(.32f,.13f,.15f));
+            for(int percent=-100;percent<=100;percent+=10)
             {
-                alignment = alignment,
-                fontStyle = fontStyle,
-                clipping = TextClipping.Clip,
-                normal = { textColor = color }
-            };
-        }
-
-        private static Texture2D CreateTexture(Color color)
-        {
-            Texture2D texture = new(1, 1, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-            texture.SetPixel(0, 0, color);
-            texture.Apply();
-            return texture;
-        }
-
-        private static Texture2D CreateRoundedTexture(int size, Color fill, Color border, float radius, float borderWidth)
-        {
-            Texture2D texture = new(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-            Vector2 center = new(size * 0.5f, size * 0.5f);
-            Vector2 half = new(size * 0.5f - 1f, size * 0.5f - 1f);
-            for (int y = 0; y < size; y++)
-            {
-                for (int x = 0; x < size; x++)
-                {
-                    Vector2 point = new(Mathf.Abs(x - center.x), Mathf.Abs(y - center.y));
-                    Vector2 corner = new(Mathf.Max(point.x - (half.x - radius), 0f), Mathf.Max(point.y - (half.y - radius), 0f));
-                    float distance = corner.magnitude - radius;
-                    if (distance > 0f)
-                    {
-                        texture.SetPixel(x, y, Color.clear);
-                    }
-                    else if (borderWidth > 0f && distance > -borderWidth)
-                    {
-                        texture.SetPixel(x, y, border);
-                    }
-                    else
-                    {
-                        texture.SetPixel(x, y, fill);
-                    }
-                }
+                float y=rail.y+(1f-ThrottleDetents.ToTravel(percent/100f))*rail.height;bool major=percent>=0||percent%20==0;
+                Fill(new Rect(rail.center.x-11,y,22,percent==0?2:1),percent==0?Ink:major?new Color(.43f,.50f,.55f):new Color(.2f,.27f,.32f));
+                if(major&&(!compact||percent==0||percent==50||Mathf.Abs(percent)==100))ui.Text(new Rect(r.x+4,y-8,narrow?27:36,16),percent.ToString(),narrow?9:11,percent==0?Ink:Muted,TextAnchor.MiddleRight);
             }
-            texture.Apply();
-            return texture;
-        }
-
-        private static Texture2D CreateCircleTexture(int size, Color fill, Color rim)
-        {
-            Texture2D texture = new(size, size, TextureFormat.RGBA32, false) { hideFlags = HideFlags.HideAndDontSave };
-            Vector2 center = new((size - 1f) * 0.5f, (size - 1f) * 0.5f);
-            float radius = size * 0.46f;
-            for (int y = 0; y < size; y++)
+            float handleY=rail.y+(1f-ThrottleDetents.ToTravel(value))*rail.height;float handleWidth=narrow?36:48;Rect handle=new(rail.center.x-handleWidth*.5f,handleY-12,handleWidth,24);
+            if(!master||linked)
             {
-                for (int x = 0; x < size; x++)
-                {
-                    float distance = Vector2.Distance(new Vector2(x, y), center);
-                    Color color = distance > radius ? Color.clear : distance > radius - 2f ? rim : fill;
-                    texture.SetPixel(x, y, color);
-                }
+                Fill(new Rect(handle.x-2,handle.y-2,handle.width+4,handle.height+4),new Color(color.r,color.g,color.b,.15f));GUI.Box(handle,GUIContent.none,ui.Handle);
+                for(int i=0;i<3;i++)Fill(new Rect(handle.center.x-8+i*7,handle.y+6,1,12),new Color(.28f,.35f,.4f));
             }
-            texture.Apply();
-            return texture;
+            else for(int i=0;i<ship.EngineCount;i++)
+            {float y=rail.y+(1f-ThrottleDetents.ToTravel(ship.GetEngineThrottle(i)))*rail.height;Fill(new Rect(rail.center.x-15,y-2,30,4),Teal);}
+            float hint=r.center.x+(narrow?23:31),hintWidth=narrow?24:32;
+            ui.Text(new Rect(hint,rail.y-6,hintWidth,18),"İL.",9,Teal);ui.Text(new Rect(hint,neutral-8,hintWidth,18),"STOP",8,Ink);
+            ui.Text(new Rect(hint,rail.yMax-11,hintWidth,18),"TOR.",9,Red);
+            string footer=master?(linked?(ship.EngineCount==4?"4 MAKİNE BİRLİKTE":"İKİ MAKİNE BİRLİKTE"):"DOKUN → EŞİTLE"):narrow?"10 İL. / 5 TORN.":"10 İLERİ / 5 TORNİSTAN";
+            ui.Text(new Rect(r.x+4,r.yMax-26,r.width-8,18),footer,narrow?8:9,Muted,TextAnchor.MiddleCenter);
         }
+        private void DrawRudder(Rect r)
+        {
+            ui.Surface(r);ui.Text(new Rect(r.x+18,r.y+10,160,28),ship.Definition.UsesPods?"POD YÖNÜ":"DÜMEN",14,Ink,bold:true);
+            ui.Text(new Rect(r.xMax-100,r.y+8,80,30),$"{ship.ActualRudder*35:+0;-0;0}°",24,Teal,TextAnchor.MiddleRight,true);
+            Rect rail=HelmLayout.SteeringRail(r);float cy=rail.center.y;Fill(new Rect(rail.x,cy-2,rail.width,4),new Color(.14f,.22f,.27f));
+            for(int i=-3;i<=3;i++)Fill(new Rect(rail.center.x+i*rail.width/6f,cy-6,1,12),i==0?Ink:Muted);
+            float x=Mathf.Lerp(rail.x,rail.xMax,(ship.Rudder+1f)*.5f);GUI.Box(new Rect(x-11,cy-14,22,28),GUIContent.none,ui.Handle);
+            float actualX=Mathf.Lerp(rail.x,rail.xMax,(ship.ActualRudder+1f)*.5f);Fill(new Rect(actualX-2,cy-20,4,8),Teal);
+            ui.Text(new Rect(rail.x,r.y+41,100,18),"İSKELE",10,Muted);ui.Text(new Rect(rail.xMax-100,r.y+41,100,18),"SANCAK",10,Muted,TextAnchor.MiddleRight);
+            if(GUI.Button(new Rect(r.x+16,r.yMax-54,136,44),"ORTALA  ·  0°",ui.Button))ship.SetRudder(0);
+            if(GUI.Button(new Rect(r.xMax-194,r.yMax-54,178,44),"ACİL STOP",ui.Danger)){ship.EmergencyStop();pointers.Clear();GUIUtility.hotControl=0;}
+        }
+        private void OnApplicationFocus(bool focused){if(!focused)pointers.Clear();}
+        private void OnApplicationPause(bool paused){if(paused)pointers.Clear();}
+        private void OnDisable(){pointers.Clear();GUIUtility.hotControl=0;}
+        private void OnDestroy()=>ui?.Dispose();
     }
 }

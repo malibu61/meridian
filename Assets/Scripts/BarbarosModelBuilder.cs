@@ -9,6 +9,7 @@ namespace Meridian
     public sealed class BarbarosModelBuilder
     {
         private readonly Transform root;
+        private readonly EnvironmentResources resourceOwner;
         private readonly Material hull, upper, deck, dark, glass, white, rubber, red;
         private readonly List<MeshFilter> mergeCandidates = new();
         private Transform portExhaustOutlet, starboardExhaustOutlet;
@@ -18,6 +19,7 @@ namespace Meridian
         public BarbarosModelBuilder(Transform parent)
         {
             root = parent;
+            resourceOwner = root.GetComponent<EnvironmentResources>() ?? root.gameObject.AddComponent<EnvironmentResources>();
             hull = Paint("Naval hull grey", new Color(0.46f, 0.51f, 0.53f), 0.28f);
             upper = Paint("Superstructure grey", new Color(0.58f, 0.62f, 0.63f), 0.26f);
             deck = Paint("Non-slip deck", new Color(0.24f, 0.28f, 0.29f), 0.13f);
@@ -359,6 +361,7 @@ namespace Meridian
         {
             Shader shader = Resources.Load<Shader>("HullMarking") ?? Shader.Find("Meridian/Hull Marking") ?? Shader.Find("Unlit/Transparent Cutout");
             Material marking = new(shader) { name = "Depth-tested F244 paint", mainTexture = Texture2D.whiteTexture, color = new Color(0.88f, 0.89f, 0.85f) };
+            resourceOwner.Own(marking);
             marking.SetFloat("_Cutoff", 0.45f);
             for (int side = -1; side <= 1; side += 2)
             {
@@ -415,6 +418,7 @@ namespace Meridian
         private Material Paint(string name, Color color, float smoothness)
         {
             Material material = new(Shader.Find("Standard")) { name = name, color = color };
+            resourceOwner.Own(material);
             material.SetFloat("_Metallic", 0.02f); material.SetFloat("_Glossiness", smoothness);
             return material;
         }
@@ -526,6 +530,7 @@ namespace Meridian
 
         private void MeshObject(string name, Mesh mesh, Material material, bool combine = true)
         {
+            resourceOwner.Own(mesh);
             GameObject obj = new(name); obj.transform.SetParent(root, false);
             MeshFilter filter = obj.AddComponent<MeshFilter>(); filter.sharedMesh = mesh;
             MeshRenderer renderer = obj.AddComponent<MeshRenderer>();

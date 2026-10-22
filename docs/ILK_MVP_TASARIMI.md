@@ -1,8 +1,8 @@
 # Meridian — Geliştirme Kaydı ve Güncel Durum
 
-> Güncelleme: 19 Ekim 2026
+> Güncelleme: 22 Ekim 2026
 >
-> Durum: MVP-0 hareket prototipi tamamlandı. TCG BARBAROS dış modeli, S-70B, 26 personel, PC/mobil kamera kontrolleri ve yerel baca dumanı geliştirmeleri mevcut. Android cihaz testi, foto-gerçekçi nihai model ve yayın hazırlığı tamamlanmadı. Çanakkale Boğazı geçişi araştırma/planlama aşamasında; henüz uygulanmadı.
+> Durum: MVP-0 hareket prototipi tamamlandı. TCG BARBAROS dış modeli, S-70B, 26 personel, PC/mobil kamera kontrolleri ve baca dumanı mevcut. Mod seçimi menüsü ve ayrı Boğaz Geçişi prototipi eklendi. Android cihaz testi, foto-gerçekçi nihai model ve yayın hazırlığı tamamlanmadı. Boğazın kıyıları/yükseltileri henüz gerçek harita verisinden üretilmedi; ilk çevre elle hazırlanmış taslaktır.
 
 Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel kapsam olarak korunur; o plandaki hedefler yapılmış özellik anlamına gelmez. Özelliklerin kaynakları, test sınırları ve gönderim durumu aşağıda ayrı belirtilir.
 
@@ -15,10 +15,66 @@ Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel k
 - İlk onaylanan kapsam: basit gemi/liman, ileri–geri hareket, bağımsız makineler ve dümen. İlerleyen isteklerle gemi dış görünüşü, çevre, kamera, personel ve efektler ayrıntılandırıldı.
 - Motor/dil: Unity **6000.6.6f1**, C#. Hedef: öncelikle yatay ekran Android; masaüstü Unity Editor geliştirme/test ortamıdır.
 - Mevcut görseller ağırlıklı olarak C# ile üretilen prosedürel mesh ve malzemelerdir; nihai Blender/UV/PBR üretimi yapılmış sayılmaz.
-- Yeni kapsam: mevcut liman çalışmasını koruyarak Çanakkale Boğazı'nın kuzeyinden güneye geçiş. Bu kapsam için araştırma raporlandı; henüz veri indirilmedi, harita üretilmedi ve rota uygulanmadı.
-- Bu belge güncellemesinde kaynak dosyalar ve mevcut test kayıtları incelendi; oyun kodu değiştirilmedi ve eski testler yeniden çalıştırılmış gibi sunulmadı.
+- Yeni kapsam: mevcut liman çalışmasını koruyarak Çanakkale Boğazı'nın kuzeyinden güneye geçiş. Araştırmadan sonra mod menüsü, ayrı taslak çevre ve sıralı rota ilerlemesi uygulandı; gerçek coğrafi veri henüz indirilip işlenmedi.
+- Aşağıdaki önceki test kayıtları korunur. Yeni menü/boğaz geliştirmesinin çalıştırılan testleri ayrıca [mod belgesinde](MODLAR_VE_BOGAZ_GECISI.md) kayıtlıdır.
 
 ## Güncel geliştirme özeti
+
+### 22 Ekim 2026 — RÜZGAR, KUMKALE, dört makine ve gemi hareketi
+
+- Menüde dört gemi vardır: BARBAROS, ANADOLU, RÜZGAR ve KUMKALE. Yeni iki küçük geminin gövde/üst yapı/numara/donanımı ayrı oluşturuldu. [Fotoğraf referansları ve kapsam](RUZGAR_VE_KUMKALE.md).
+- Yalnız RÜZGAR: dış/iskele, iç/iskele, iç/sancak ve dış/sancak için dört bağımsız gaz kolu; merkezde kompakt dümen ve dört makineye ortak gaz. Eski üç geminin iki kollu düzeni korunur.
+- Knot hesabındaki 4:1 model ölçeği düzeltildi. Gemiye özel sürat hedefi, dümen geçişi, gecikmeli dairesel dönüş, dönüşte dışa yatış ve yönlü rezonanslı yalpa eklendi. Analog kadranın güncel aralığı ±40° oldu; aşağıdaki ±20° kayıtları tarihsel sürümdür.
+- Sert borda denizi ile baş/kıç denizi artık farklı eksen tepkisi üretir. Gerçek GM/GZ/RAO, gizli manevra kartı veya devrilme sertifikası iddiası yoktur. [Sürat/dönüş/yalpa, kaynaklar ve son testler](SURAT_DONUS_YALPA.md).
+- Aktif proje `meridian` klasöründedir. Bu değişikliklerde yeni commit/push yapılmadı. Önceki test/gönderim kayıtları aşağıda korunur.
+- Son tur: 39 fizik senaryosu/89 kontrol, 7949 yeni gövde geometri kontrolü, 150 canlı model/mod kontrolü, 515 dört-kol mantık ve 69 canlı kumanda kontrolü geçti. Önceki kontrol regresyonu 727/22 geçti. Son C# kaynak derlemesi başarılıdır.
+- RÜZGAR 41, KUMKALE 25, BARBAROS 32, ANADOLU 21 kn ölçüldü. Sert borda denizinde yeni küçük gemiler yaklaşık 34,7°/33,1° tepe yalpası verdi. Bunlar kontrollü oyun fizik testi sonuçlarıdır; gerçek cihaz/deniz denemesi değildir.
+- 18 offscreen gemi renderı üretildi. Batch modunda HUD görüntüsü oluşmadığı ve açık editörün fare kontrolü kesildiği için yeni HUD için etkileşimli görsel onay/gerçek parmak testi yapılmış sayılmaz. Açık eski Play oturumunun durdurulup yeniden başlatılması gerekir. Ayrıntı ve ham kanıtlar yukarıdaki fizik belgesindedir.
+
+### 22 Ekim 2026 — sarkaçlı analog yalpa kadranı
+
+- Referans eğimölçerin mantığında altta sıfır, çift yönlü derece yayı ve hareketli ibre eklendi. Ayrı sol üst panel ve başlıktaki sayı aynı fiziksel yalpa verisini kullanır.
+- ±20° ölçüm aralığı küçük yatışları görünür kılan geniş grafik yaya yayılır. Ölçek dışına çıkıldığında sayı gerçek açıyı korur, ibre sınırda kalır ve uyarı gösterilir. Bu bir gemi stabilite sınırı değildir.
+- Yeni panel ortak safe-area yerleşimine/kamera engeline dahil edildi; makine/dümenle çakışmaz ve komut üretmez. Test kapsamı ve görüntüler: [Analog yalpa kadranı](YALPA_KADRANI.md).
+- Genişletilmiş turda 727 mantık/yerleşim ve 22 canlı kontrol geçti. İskele 10°, denge ve sancak 10° Game View görüntüleri ayrı incelendi.
+
+### 22 Ekim 2026 — anlık yalpa telemetrisi
+
+- Üst başlığa ROTA ile MAKİNE arasında beşinci metrik olarak YALPA eklendi. Bir ondalık derece ve İSKELE/SANCAK/DENGE yönü gösterilir; anlık gövde açısı doğrudan `ShipBuoyancy.RollDegrees` üzerinden okunur.
+- Safe-area içindeki beş metrik ortak `HelmLayout` hesabını kullanır. ±10° fiziksel gövde yatışı ve yalnız baş değiştirmede sıfır yalpa testleri iki gemi için eklendi. Ayrıntı: [Kumanda ve arayüz](KUMANDA_VE_ARAYUZ.md).
+- Genişletilmiş kumanda regresyonu geçti: 529 mantık/yerleşim ve 22 canlı kontrol. HUD görüntüsü incelendi; anlık açı ve yön okunuyor, diğer göstergelerle çakışmıyor.
+
+### 21–22 Ekim 2026 — borda çarpması, rota etkisi ve su/menü düzeltmeleri
+
+- Dört gövde desteğine dalganın yatay orbital akışından kuvvet eklendi; gerçek Rigidbody sürüklenir ve dönüş momenti alır. Baş ve yer üzerindeki rota göstergelerinin farklılaşması artık yalnız makine/dümen kaynaklı değildir.
+- İki bordada toplam sekiz temas örneği, yükselen su ve geliş açısına bağlı parçacık sıçraması ve yüzey köpüğü üretir. Efektler tekrar kullanılır; iki yeni sıçrama yayıcısının toplam üst sınırı 448 parçacıktır.
+- Daha belirgin geometrik dalga, tepe köpüğü ve gemi çevresinde sıklaştırılmış su mesh'i eklendi. `Mathf.SmoothStep` kullanımından kaynaklanan, merkezde bile dalga genliğini %24'e düşüren hata giderildi. Uzak su düzlemine yakın yama maskesi uygulanarak dalga çukurlarının düz suyla örtülmesi de giderildi.
+- Seçili ve seçili olmayan düğmelerin font/boyut/hizalama/padding ayarları eşitlendi. Geniş su parlaması kısıldı ve prosedürel gökyüzünün güneş diski kapatıldı; kullanıcının tam parlak-leke olayı tekil olarak yeniden üretilmiş sayılmaz.
+- Kapsam, görsel kontrol ve test sonuçları: [Dalga çarpması ve düzeltmeler](DALGA_CARPMA_VE_DUZELTMELER.md). Cihaz/Metal performans onayı ve foto-gerçekçilik iddiası yoktur.
+
+### 21 Ekim 2026 — yönlü dalga seçimi ve gövde fiziği
+
+- Menüye DENİZ sekmesi, beş seviye ve sekiz dünya pusulası geliş yönü eklendi. Yeni seyir veya mevcut seyirde sıfırlamadan uygulama akışları ayrıldı.
+- Eski görsel sinüs sallanması kaldırıldı. Dört su desteğinden gerçek Rigidbody'ye uygulanan yay-sönüm kuvvetleriyle yalpa, baş-kıç ve düşey hareket eklendi; Anadolu ve Barbaros farklı profiller kullanır.
+- Su, mikro dalga shader'ı ve köpük aynı yön/seviye ayarlarını izler. Takip kamerasının ufku gövde yalpasından ayrıldı. Yatay itki/direnç korunur.
+- Fizik ölçümleri, kullanım ve gerçekçilik sınırları: [Dalga seçimi ve gemi fiziği](DALGA_SECIMI_VE_GEMI_FIZIGI.md).
+
+### 21 Ekim 2026 — deniz ve köpük yenilemesi
+
+- Çizgili su görünümü yerine katmanlı mikro dalga shader'ı, açıya bağlı yansıma hissi ve güneş parlaması uygulandı. Gerçek sahne yansıması değildir.
+- Kare köpükler, saydam/yumuşak kenarlı organik yüzey köpüğüne dönüştürüldü. İskele/sancak izleri gerçek makine yükünü, baş köpüğü ileri hızı izler. İki yana açılan baş köpüğü ve hareketli kıyı yıkaması eklendi.
+- Deniz ve köpük ortak dalga yüksekliğini kullanır; gemi/mod değişiminde temizlenir, menüde duraklar. Kaynak yaşam döngüsü ve parçacık/köşe bütçeleri sınırlandırıldı.
+- Araştırma değil, gerçek Unity derleme/seyir testleri ve görsel karşılaştırma yapıldı. Sonuçlar ve iPhone/native test sınırı [deniz belgesinde](DENIZ_VE_KOPUK.md) kayıtlıdır.
+
+### 21 Ekim 2026 — kademeli gaz, ortak kol ve arayüz
+
+- İskele/sancak makine komutları 10 ileri (`+10…+100%`) ve 5 tornistan (`−20…−100%`) kademesine geçirildi. Sıfır ayrı STOP konumudur; motorun gerçek yük artışı yumuşak kalır.
+- Çizgili/sayısal gaz rayları, dümen ile sancak gazı arasında iki makineyi kontrol eden ortak kol eklendi. Ayrı komutlarda ortak panel AYRI gösterir; komutları kendiliğinden birleştirmez.
+- Klavye için ilk basış ve basılı tutma kademe tekrarı uygulandı. Fare/touch yakalama, kol dışına sürükleme, iki ayrı parmakla bağımsız kollar ve ortak kolun geçici sahipliği ayrıldı.
+- Menü, telemetri ve kumandalar ortak grafik diline taşındı; safe-area yerleşimi ve kamera engelleri aynı hesaptan üretilir. Mod ve gemi seçimi ile boğaz rota krokisi korunur.
+- Unity'de son tur dahil 491 mantık/yerleşim, 16 canlı kumanda testi geçti. Ortak/bağımsız kol, dümen ve stop fareyle de denendi. Son düğme boyutu, görseller ve sonuçlar [kumanda belgesinde](KUMANDA_VE_ARAYUZ.md) kayıtlıdır. Gerçek iOS kurulumu/iki parmak donanım testi yapılmış sayılmaz.
+
+Aşağıdaki önceki kayıtlar tarihsel olarak korunmuştur; sürekli gaz girişinden söz eden bölümlerin yerine artık kademeli komutlar kullanılır.
 
 Proje, başlangıçtaki basit blok prototipten oynanabilir bir TCG BARBAROS (F-244) manevra demosuna dönüştürüldü. Şu anda Unity Editor içinde gemi hareket ettirilebiliyor, iki makine bağımsız kullanılabiliyor, dümen kontrol edilebiliyor ve kamera geminin çevresinde döndürülebiliyor.
 
@@ -27,7 +83,7 @@ Proje, başlangıçtaki basit blok prototipten oynanabilir bir TCG BARBAROS (F-2
 - Unity 6.6 ve C# tabanlı proje oluşturuldu.
 - Ana sahne ve çalışma anında sahneyi kuran başlangıç sistemi hazırlandı.
 - Proje Git deposuna dönüştürüldü ve `malibu61/meridian` GitHub deposuna ilk prototip gönderildi.
-- Gemi dış modeli, helikopter/personel ve zoom geliştirmeleri `376beb7` commit'inde kayıtlıdır; önceki gönderim tamamlandı. Baca dumanı değişiklikleri ve bu belge güncellemesi henüz commit/push edilmedi. Ayrıntı: aşağıdaki sürüm geçmişi.
+- Gemi dış modeli, helikopter/personel ve zoom `376beb7`; baca dumanı ve önceki belge güncellemesi `45677bb` commit'inde gönderildi. Menü ve ayrı Boğaz Geçişi prototipi daha sonraki yerel geliştirmedir. Ayrıntı: aşağıdaki sürüm geçmişi.
 - Unity dışındaki geçici derleme kopyaları ve Unity Console üzerinden kod kontrolleri yapıldı.
 
 ### Tamamlanan gemi hareket sistemi
@@ -76,7 +132,7 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 - Sürate göre artan baş köpüğü efekti bulunuyor.
 - Kıyı ve liman duvarlarında köpük şeritleri bulunuyor.
 - Deniz üzerindeki görsel hareket mobil performans düşünülerek düşük maliyetli tutuldu.
-- İki bacaya makine yükünü ayrı izleyen egzoz dumanı eklendi; normal/ani yük davranışları aşağıdaki özel bölümde kayıtlıdır. Bu ekleme henüz commit/push edilmedi.
+- İki bacaya makine yükünü ayrı izleyen egzoz dumanı eklendi; normal/ani yük davranışları aşağıdaki özel bölümde kayıtlıdır. Temel duman sürümü `45677bb` ile gönderildi; mod değişiminde duman sıfırlama daha sonraki yerel eklemedir.
 
 ### Liman ve çevre
 
@@ -154,9 +210,11 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 | S-70B Seahawk | Park edilmiş prosedürel dış model mevcut; uçuş yok |
 | Güverte ve kırlangıç personeli | 26 kişi; halat, gözcü ve yürüme animasyonları mevcut |
 | Fare/klavye zoom ve mobil pinch | Uygulandı; 23 mantık kontrolü ve PC canlı test kaydı mevcut |
-| Makine yüküne bağlı baca dumanı | Yerelde uygulandı; 17 tepki kontrolü ve canlı bağlantı test kaydı mevcut |
-| Çanakkale kuzey–güney geçişi | Araştırma/öneri hazır; coğrafya ve görev henüz uygulanmadı |
-| Coğrafi koordinatlar, akıntı ve büyük dünya yükleme | Henüz uygulanmadı |
+| Makine yüküne bağlı baca dumanı | `45677bb` ile gönderildi; 17 tepki kontrolü ve canlı bağlantı test kaydı mevcut |
+| Menü ve mod seçimi | Açılış, MENÜ/Esc, duraklat/devam ve yeniden başlat akışı eklendi |
+| Çanakkale kuzey–güney geçişi | Ayrı oynanabilir taslak; 12 sıralı kontrol noktası, kıyı ve köprü silüetleri |
+| Şamandıraya bağlama | Yakında kartı; başlatma pasif, görev henüz yok |
+| Gerçek OSM/DEM coğrafyası, akıntı ve streaming/floating origin | Henüz uygulanmadı; elle hazırlanmış yaklaşık koordinatlı taslak bunların yerine geçmez |
 | Yanaşma hedefi ve görev sonucu | Henüz yapılmadı |
 | Rıhtım çarpışma/hasar geri bildirimi | Henüz tamamlanmadı |
 | Ses sistemi | Henüz yapılmadı |
@@ -191,6 +249,13 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 | `Assets/Editor/BarbarosVisualReview.cs` | Çok açılı render ve personel/rota/runtime incelemesi |
 | `Assets/Editor/CameraZoomReview.cs` | 23 zoom giriş kontrolü ve kamera inceleme araçları |
 | `Assets/Editor/EngineExhaustReview.cs` | 17 duman tepki kontrolü ve dört durumlu görsel çalışma |
+| `GameSessionController.cs` | Aktif mod, menü/duraklat/devam, görev ilerlemesi ve bitiş |
+| `ModeSelectionMenu.cs` | Mod kartları, açıklamalar, başlat/devam, görev HUD'ı ve rota krokisi |
+| `StraitRoute.cs` | Elle hazırlanmış yaklaşık coğrafi merkez hattı, genişlikler ve etiketler |
+| `StraitEnvironment.cs` | Ayrı taslak kıyı/tepe, köprü, yerleşim ve kontrol çemberi |
+| `VoyageProgress.cs` | Sıralı ve hareket yönünü kontrol eden oyun geçiş noktaları |
+| `EnvironmentResources.cs` | Mod değişiminde üretilmiş mesh/malzemelerin temizliği |
+| `Assets/Editor/ModeSelectionReview.cs` | Rota, mod değişimi ve canlı hareket/duraklatma testleri |
 
 ## Sıradaki önerilen geliştirme sırası
 
@@ -244,7 +309,7 @@ Kaynak fotoğraflar, ayrıntılar ve test ölçümleri: [Güverte yaşamı](GUVE
 - Tornistan mutlak yükle değerlendirilir; sert yön değişimi ek darbe oluşturabilir. Gaz kısmak yeni darbe başlatmaz.
 - `ShipController` yükleri salt okunur açar; duman çalışmasında itki/dümen davranışı değiştirilmedi.
 - Baca başına en fazla 240 parçacık, ortak 64×64 prosedürel bulut dokusu ve özel shader kullanılır. Gerçek egzoz tesisatı/emisyon davranışının doğrulanmış modeli değildir.
-- Bu dosyalar çalışma alanındadır; duman değişiklikleri henüz commit/push edilmedi.
+- Bu temel duman dosyaları `45677bb` ile gönderildi. Sonraki menü çalışmasında mod değişiminde parçacıkların ve geçici egzoz yük tepkisinin sıfırlanması eklendi.
 
 Ayrıntılar: [Baca dumanı](BACA_DUMANI.md).
 
@@ -276,7 +341,7 @@ Tekrarlama araçları:
 
 ## Çanakkale Boğazı — araştırma ve önerilen uygulama
 
-**Durum: araştırıldı ve kullanıcıya raporlandı; henüz uygulanmadı.** Bu bölüm coğrafi bulgularla önerilen mühendislik kararlarını ayırır. Veri dosyaları henüz indirilip üst üste doğrulanmadı; aşağıdaki çözünürlükler yerel doğruluk garantisi değildir. Rota anlatımı oyun bölümlendirmesidir, gerçek seyir talimatı değildir.
+**Araştırma kaydı ve güncel sınır:** Aşağıdaki araştırma kullanıcıya raporlandı. Sonrasında mod menüsü ve ayrı oynanabilir taslak çevre eklendi; aşağıdaki gerçek veri/GIS üretim planı henüz gerçekleştirilmedi. Veri dosyaları indirilip üst üste doğrulanmadı; çözünürlükler yerel doğruluk garantisi değildir. Mevcut yaklaşık merkez hattı ve prosedürel kıyılar gerçek seyir talimatı veya ölçülmüş coğrafya değildir. Ayrıntı: [uygulanan ilk mod](MODLAR_VE_BOGAZ_GECISI.md).
 
 ### Coğrafya ve güzergâh
 
@@ -352,8 +417,10 @@ Kabul: kesintisiz tam geçiş; gemi seviyesinden doğru kıyı/tepe silüeti; tu
 | 18 Ekim 2026 | `e9ba14f` | TCG BARBAROS görsel MVP ve çevre iyileştirmesi |
 | 19 Ekim 2026 | `376beb7` | Dış model ayrıntıları, helikopter/personel animasyonları ve kamera zoom |
 | 19 Ekim 2026, yerel | Henüz commit yok | Makine yüküne bağlı baca dumanı, ilgili test araçları/belge ve ana belge güncellemesi |
+| 19 Ekim 2026, sonraki gönderim | `45677bb` | Bir önceki satırdaki duman ve belge çalışması commit/push edildi; uzak `main` ile doğrulandı |
+| 19 Ekim 2026, son yerel çalışma | Henüz commit yok | Mod seçimi menüsü, ayrı Boğaz Geçişi taslağı, sıralı rota ve testler |
 
-Belge güncellemesi öncesindeki yerel duman farkları: `BarbarosModelBuilder.cs`, `ShipController.cs`, `README.md`; yeni `EngineExhaustResponse.cs`, `EngineExhaustSmoke.cs`, `EngineExhaustReview.cs`, `FunnelSmoke.shader`, Unity `.meta` dosyaları ve `docs/BACA_DUMANI.md`. Bunlar korunmuştur. Bu işlemde yeni commit veya push yapılmaz.
+İlk belge güncellemesinde yerel olan duman farkları `45677bb` içinde gönderilmiştir. En son menü/mod geliştirmesi yereldedir; bu özellik isteğinde ayrıca commit/push istenmediği için yeni gönderim yapılmadı.
 
 ## Bilinen sınırlar ve yayın öncesi eksikler
 
@@ -363,8 +430,8 @@ Belge güncellemesi öncesindeki yerel duman farkları: `BarbarosModelBuilder.cs
 - Üniforma ve gemi dış modeli stilizedir. Yakın plan foto-gerçekçilik, UV/PBR üretimi ve ölçülü nihai Blender modeli yoktur.
 - Park helikopteri uçmaz; personel/halatlar görsel animasyondur, operasyon prosedürü simülasyonu değildir.
 - Gerçek mobil cihaz testi, Android yayın paketi doğrulaması, CPU/GPU/bellek profili ve mağaza yayını tamamlanmadı. Sentetik pinch testleri bunların yerine geçmez.
-- Ses, ana menü, ayarlar, kayıt, eğitim, trafik/yapay zekâ, çok oyunculu ve savaş sistemleri uygulanmış sayılmaz.
-- Çanakkale kıyı/DEM/batimetri verisi doğrulaması, koordinatlar, akıntı ve büyük dünya yükleme henüz yoktur.
+- Ses, ayarlar, kalıcı kayıt, tam eğitim, trafik/yapay zekâ, çok oyunculu ve savaş sistemleri uygulanmış sayılmaz. Açılış/mod seçimi menüsü artık mevcuttur; liman hâlâ serbest manevradır.
+- Çanakkale kıyı/DEM/batimetri verisi doğrulaması, hassas coğrafi koordinat altyapısı, akıntı ve büyük dünya yükleme henüz yoktur. Güncel Boğaz Geçişi, yaklaşık merkez hattına göre üretilen kıyılarla oynanabilir bir taslaktır.
 
 ## Ayrıntılı belge dizini
 
@@ -373,6 +440,7 @@ Belge güncellemesi öncesindeki yerel duman farkları: `BarbarosModelBuilder.cs
 - [Kamera zoom](KAMERA_ZOOM.md): fare/klavye/mobil girdi davranışı ve 23 kontrol.
 - [Baca dumanı](BACA_DUMANI.md): yük tepkisi, 17 kontrol, dört görsel durum ve yerel gönderim sınırı.
 - [README](../README.md): projeyi açma, kontroller ve kısa özellik özeti.
+- [Modlar ve Boğaz Geçişi](MODLAR_VE_BOGAZ_GECISI.md): uygulanan menü, mod yaşam döngüsü, taslak coğrafya ve yeni testler.
 
 ---
 

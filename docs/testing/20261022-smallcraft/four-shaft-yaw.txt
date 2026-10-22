@@ -1,0 +1,4 @@
+engine=0 yaw=1,097 speed=2,390
+engine=1 yaw=-1,002 speed=2,279
+engine=2 yaw=0,335 speed=2,250
+engine=3 yaw=-0,335 speed=2,265
