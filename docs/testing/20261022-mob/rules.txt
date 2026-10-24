@@ -1,0 +1,1 @@
+MOB_RULES_PASS checks=141 vessels=4 legacy_five_entry_saves_preserved ordered_actions neutral_speed_yaw_roll hull_sweep recovery_abort

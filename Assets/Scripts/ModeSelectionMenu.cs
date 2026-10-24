@@ -10,21 +10,25 @@ namespace Meridian
         private MaritimeUiTheme ui;
         private bool menuWasOpen;
         private bool seaPage;
+        private bool missionPage;
+        private int selectedMission;
         private SeaStateSettings selectedSea=SeaStateSettings.Default;
         public SeaStateSettings SelectedSea=>selectedSea;
         public bool StableSelectionLayout=>ui!=null&&ui.SelectionLayoutMatches;
-        public void ShowSeaOptions()=>seaPage=true;
+        public void ShowSeaOptions(){seaPage=true;missionPage=false;}
+        public void ShowMissionOptions()=>ShowMissionOptions(session.Missions.Assigned?session.Missions.Run.Definition.Vessel:selectedVessel);
+        public void ShowMissionOptions(VesselId vessel){missionPage=true;seaPage=false;selectedVessel=vessel;selectedMission=session.Missions.GetProgress(vessel).ContinueIndex;}
         public bool SelectSea(SeaStateSettings sea){if(!sea.IsValid)return false;selectedSea=sea;return true;}
         public SimulationMode SelectedMode=>selected;
         public VesselId SelectedVessel=>selectedVessel;
         public bool SelectVessel(VesselId vessel)
-        {if(!VesselCatalog.IsAvailable(vessel))return false;selectedVessel=vessel;return true;}
+        {if(!VesselCatalog.IsAvailable(vessel))return false;selectedVessel=vessel;if(missionPage)selectedMission=session.Missions.GetProgress(vessel).ContinueIndex;return true;}
         public void SelectMode(SimulationMode mode){if(mode==SimulationMode.Harbor||mode==SimulationMode.StraitPassage||mode==SimulationMode.BuoyMooring)selected=mode;}
         public void Configure(GameSessionController controller){session=controller;selected=SimulationMode.Harbor;selectedVessel=controller.ActiveVessel;selectedSea=controller.ActiveSea;}
         private void OnGUI()
         {
             if(session==null)return;
-            if(session.MenuOpen&&!menuWasOpen)GUIUtility.hotControl=0;
+            if(session.MenuOpen&&!menuWasOpen){GUIUtility.hotControl=0;if(session.HasStarted){selectedVessel=session.ActiveVessel;selectedSea=session.ActiveSea;selected=session.ActiveMode;}}
             menuWasOpen=session.MenuOpen;ui??=new MaritimeUiTheme();GUI.depth=-30;
             HelmLayout layout=HelmLayout.Current;
             Matrix4x4 previous=GUI.matrix;
@@ -44,11 +48,13 @@ namespace Meridian
             for(int x=40;x<1280;x+=60)Fill(new Rect(x,82,1,560),new Color(.12f,.19f,.25f,.13f));
             for(int y=82;y<650;y+=60)Fill(new Rect(40,y,1200,1),new Color(.12f,.19f,.25f,.13f));
             Fill(new Rect(40,30,4,26),Teal);ui.Text(new Rect(58,28,350,30),"M E R I D I A N",22,Ink,bold:true);
-            if(GUI.Button(new Rect(818,24,198,40),"01  /  SEYİR",seaPage?ui.Button:ui.Selected))seaPage=false;
-            if(GUI.Button(new Rect(1030,24,210,40),"02  /  DENİZ",seaPage?ui.Selected:ui.Button))seaPage=true;
+            if(GUI.Button(new Rect(624,24,190,40),"01  /  SEYİR",!seaPage&&!missionPage?ui.Selected:ui.Button)){seaPage=false;missionPage=false;}
+            if(GUI.Button(new Rect(826,24,194,40),"02  /  GÖREVLER",missionPage?ui.Selected:ui.Button))ShowMissionOptions(selectedVessel);
+            if(GUI.Button(new Rect(1032,24,208,40),"03  /  DENİZ",seaPage?ui.Selected:ui.Button)){seaPage=true;missionPage=false;}
             Fill(new Rect(40,77,1200,1),new Color(.17f,.24f,.30f));
-            ui.Text(new Rect(40,99,800,62),seaPage?"Deniz senin seçimin.":session.Completed?"Geçiş tamamlandı.":"Bir sonraki seyrin.",48,Ink,bold:true);
-            ui.Text(new Rect(43,167,1000,28),seaPage?"Dalga seviyesini ve dalganın GELDİĞİ pusula yönünü seç.":"Platformunu seç. Görevini belirle. Kumanda sende.",18,Muted);
+            ui.Text(new Rect(40,99,1000,62),missionPage?"Her manevra bir sonraki adım.":seaPage?"Deniz senin seçimin.":session.Completed?"Yeni bir seyre hazır mısın?":"Bir sonraki seyrin.",44,Ink,bold:true);
+            ui.Text(new Rect(43,167,1100,28),missionPage?(MissionAccessPolicy.AllScenariosUnlockedForTesting?"TEST SÜRÜMÜ · Bütün görevler açık. İstediğin gemi ve aşamayı seç; sonuçların kaydedilir.":"Görevini seç. İlerlemen bu cihazda saklanır; tamamladığın görevleri tekrar oynayabilirsin."):seaPage?"Dalga seviyesini ve dalganın GELDİĞİ pusula yönünü seç.":"Platformunu seç. Serbest seyir veya GÖREVLER sekmesi. Kumanda sende.",18,Muted);
+            if(missionPage){DrawMissions();return;}
             if(seaPage){DrawSeaOptions();return;}
             ui.Text(new Rect(40,220,480,26),"01   PLATFORM",13,Teal,bold:true);
             ui.Text(new Rect(628,220,612,26),"02   SEYİR MODU",13,Teal,bold:true);
@@ -106,7 +112,9 @@ namespace Meridian
                 Line(new Vector2(x,600-h*17),new Vector2(next,600-hn*17),2,Teal);
             }
             ui.Text(new Rect(632,564,608,46),"Yandan dalga: yalpa. Baştan/kıçtan: baş-kıç hareketi. Seviye arttıkça fiziksel sallanma artar.",16,Muted);
-            bool canApply=session.HasStarted&&!session.Completed;
+            bool missionSea=session.Missions!=null&&session.Missions.Assigned;
+            if(missionSea)ui.Text(new Rect(632,606,608,25),"Görevde deniz koşulları sabittir; serbest seyirde değiştirebilirsin.",13,Amber);
+            bool canApply=session.HasStarted&&!session.Completed&&!missionSea;
             if(GUI.Button(new Rect(926,638,314,54),canApply?"UYGULA VE DEVAM  →":"SEYİR SEÇİMİNE DÖN  →",ui.Primary))
             {
                 if(canApply){session.ApplySeaState(selectedSea);session.Resume();GUIUtility.ExitGUI();}else seaPage=false;
@@ -114,6 +122,35 @@ namespace Meridian
             if(GUI.Button(new Rect(628,638,280,54),"SEYİR SEÇİMİ",ui.Button))seaPage=false;
             ui.Text(new Rect(40,636,548,25),"5 OYUN SEVİYESİ · RESMÎ DENİZ DURUMU ÖLÇEĞİ DEĞİLDİR",11,Muted,bold:true);
             ui.Text(new Rect(40,666,548,23),"Uygula mevcut seyri korur; deniz 4 saniyede geçiş yapar.",12,Muted);
+        }
+        private void DrawMissions()
+        {
+            for(int i=0;i<VesselCatalog.All.Count;i++)
+            {
+                var id=VesselCatalog.All[i];if(GUI.Button(new Rect(40+i*304,220,288,42),VesselCatalog.Get(id).Name,id==selectedVessel?ui.Selected:ui.Button))SelectVessel(id);
+            }
+            MissionProgressStore progress=session.Missions.GetProgress(selectedVessel);
+            for(int i=0;i<DockingMissionCatalog.Count;i++)
+            {
+                var mission=DockingMissionCatalog.Get(selectedVessel,i);bool unlocked=progress.IsUnlocked(i),done=progress.IsCompleted(i);Rect r=new(40,280+i*51,820,45);
+                bool enabled=GUI.enabled;GUI.enabled=unlocked;
+                if(GUI.Button(r,GUIContent.none,selectedMission==i?ui.Selected:ui.Button))selectedMission=i;GUI.enabled=enabled;
+                ui.Text(new Rect(r.x+16,r.y+5,48,35),$"{i+1:00}",23,unlocked?Teal:Muted,bold:true);
+                ui.Text(new Rect(r.x+77,r.y+5,515,35),mission.Title,17,unlocked?Ink:Muted,bold:true);
+                string state=done?new string('★',progress.Stars(i))+new string('☆',3-progress.Stars(i))+"  TAMAM":unlocked?"OYNA":"KİLİTLİ · ÖNCE "+i;
+                ui.Text(new Rect(r.xMax-210,r.y+5,194,35),state,13,done?Teal:unlocked?Amber:Muted,TextAnchor.MiddleRight,bold:true);
+            }
+            ui.Surface(new Rect(890,280,350,335));ui.Text(new Rect(910,295,310,27),VesselCatalog.Get(selectedVessel).Name.Replace("TCG ","")+" İLERLEMEN",15,Teal,bold:true);
+            ui.Text(new Rect(910,333,310,48),$"{progress.CompletedCount} / {DockingMissionCatalog.Count} görev",32,Ink,bold:true);
+            var chosen=DockingMissionCatalog.Get(selectedVessel,selectedMission);ui.Text(new Rect(910,388,310,158),chosen.Briefing,14,Muted);
+            float best=progress.BestSeconds(selectedMission);ui.Text(new Rect(910,553,310,45),best>0?$"En iyi süre: {best:0} sn\nEn iyi sonuç: {progress.Stars(selectedMission)} / 3 yıldız":"Geçmek için kusursuz yıldız gerekmez. Süre ilk görevlerde yalnız bilgi amaçlıdır.",14,Muted);
+            bool current=session.Missions.Assigned&&!session.Missions.Terminal&&session.Missions.Run.Definition.Vessel==selectedVessel;
+            if(GUI.Button(new Rect(40,638,360,54),current?"MEVCUT GÖREVE DEVAM":"KALDIĞIN GÖREVE DÖN →",ui.Button))
+            {if(current)session.Resume();else session.Missions.StartMission(selectedVessel,progress.ContinueIndex);GUIUtility.ExitGUI();}
+            if(GUI.Button(new Rect(420,638,250,54),"SERBEST SEYİR",ui.Button)){missionPage=false;seaPage=false;}
+            bool previous=GUI.enabled;GUI.enabled=progress.IsUnlocked(selectedMission);
+            if(GUI.Button(new Rect(890,638,350,54),"SEÇİLİ GÖREVİ BAŞLAT →",ui.Primary)){session.Missions.StartMission(selectedVessel,selectedMission);GUIUtility.ExitGUI();}GUI.enabled=previous;
+            ui.Text(new Rect(40,597,820,25),progress.SaveFailed?"İlerleme kaydedilemedi; cihaz depolamasını kontrol et.":"İlerleme ve en iyi sonuçlar yerel kayıtta; seferin anlık konumu kaydedilmez.",12,progress.SaveFailed?Amber:Muted);
         }
         private void DrawVesselCard(VesselId id,Rect r)
         {
@@ -180,6 +217,10 @@ namespace Meridian
         private void DrawStatus(Rect r)
         {
             GUI.Box(r,GUIContent.none,ui.Inset);
+            string feedback=session.Audio?.StatusFeedback;
+            if(!string.IsNullOrEmpty(feedback)){ui.Text(new Rect(r.x+14,r.y+3,r.width-28,r.height-6),feedback,12,session.Audio.HornBusy||session.Missions!=null&&session.Missions.Signals!=null&&session.Missions.Signals.Expected!=WhistleSignal.None?Amber:Ink);return;}
+            if(session.Missions!=null&&session.Missions.Assigned)
+            {ui.Text(new Rect(r.x+14,r.y+5,r.width-28,25),$"{VesselCatalog.Get(session.Missions.Run.Definition.Vessel).Name} GÖREVİ  {session.Missions.Index+1}/{DockingMissionCatalog.Count}  ·  DALGA {session.ActiveSea.Level}/5  ·  {(session.Missions.Run.Definition.IsRescue?"MOB / OYUN EĞİTİMİ":"1 / 2 / 3: DÜDÜK")}  ·  ESC: MENÜ",12,Muted);return;}
             if(session.ActiveMode==SimulationMode.StraitPassage&&session.Voyage!=null)
             {
                 VoyageProgress voyage=session.Voyage;

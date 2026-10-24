@@ -1,0 +1,1 @@
+TUG_NAV_RULES_PASS checks=25 terrain_caps_sweeps own_hull_end_route contact_geometry

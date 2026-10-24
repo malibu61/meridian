@@ -1,0 +1,1 @@
+COMPACT_HUD_RUNTIME_PASS checks=10 horn_pause_completion radio_status camera_regions four_engines

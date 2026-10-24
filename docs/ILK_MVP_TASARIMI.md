@@ -2,7 +2,7 @@
 
 > Güncelleme: 22 Ekim 2026
 >
-> Durum: MVP-0 hareket prototipi tamamlandı. TCG BARBAROS dış modeli, S-70B, 26 personel, PC/mobil kamera kontrolleri ve baca dumanı mevcut. Mod seçimi menüsü ve ayrı Boğaz Geçişi prototipi eklendi. Android cihaz testi, foto-gerçekçi nihai model ve yayın hazırlığı tamamlanmadı. Boğazın kıyıları/yükseltileri henüz gerçek harita verisinden üretilmedi; ilk çevre elle hazırlanmış taslaktır.
+> Durum: **Dört gemili, iki oynanabilir modlu geliştirilmiş Unity Editor prototipi.** Gemi başına beş yanaşma ve bir denize adam düştü eğitimi, toplam 24 görev; gemiye özgü kayıt, telsiz/düdük, sahil/güverte personeli ve fiziksel baş/kıç halatları var. BARBAROS/ANADOLU görevlerinde gerçek kuvvetten sayılan römorkör çalışmaları, RÜZGAR'da bağımsız iç/dış makine koşulları uygulandı. Gerçek mobil build doğrulaması, bütün görevlerin elle oynanış dengesi, nihai görsel kalite ve yayın hazırlığı tamamlanmadı.
 
 Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel kapsam olarak korunur; o plandaki hedefler yapılmış özellik anlamına gelmez. Özelliklerin kaynakları, test sınırları ve gönderim durumu aşağıda ayrı belirtilir.
 
@@ -13,12 +13,141 @@ Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel k
 - Bu sohbetin çalışma yolu olarak görünen `maritimeai2`, aktif Unity projesi değildir; geliştirme ve belgelerin asıl hedefi `meridian` klasörüdür.
 - Amaç: başlangıçta TCG BARBAROS (F-244), sonrasında farklı gemilere genişleyebilen mobil gemi manevra oyunu.
 - İlk onaylanan kapsam: basit gemi/liman, ileri–geri hareket, bağımsız makineler ve dümen. İlerleyen isteklerle gemi dış görünüşü, çevre, kamera, personel ve efektler ayrıntılandırıldı.
-- Motor/dil: Unity **6000.6.6f1**, C#. Hedef: öncelikle yatay ekran Android; masaüstü Unity Editor geliştirme/test ortamıdır.
+- Motor/dil: Unity **6000.6.6f1**, C#. Hedef: yatay ekran mobil oyun; masaüstü Unity Editor geliştirme/test ortamıdır. İlk planda Android vardı; iPhone 16 Pro üzerinde Unity Remote 5 ile görüntü/kumanda denemesi yapıldı ve iOS build profili eklendi. Bunlar bağımsız iOS/Android build performans doğrulaması değildir.
 - Mevcut görseller ağırlıklı olarak C# ile üretilen prosedürel mesh ve malzemelerdir; nihai Blender/UV/PBR üretimi yapılmış sayılmaz.
 - Yeni kapsam: mevcut liman çalışmasını koruyarak Çanakkale Boğazı'nın kuzeyinden güneye geçiş. Araştırmadan sonra mod menüsü, ayrı taslak çevre ve sıralı rota ilerlemesi uygulandı; gerçek coğrafi veri henüz indirilip işlenmedi.
 - Aşağıdaki önceki test kayıtları korunur. Yeni menü/boğaz geliştirmesinin çalıştırılan testleri ayrıca [mod belgesinde](MODLAR_VE_BOGAZ_GECISI.md) kayıtlıdır.
 
+## Şu anda hangi aşamadayız?
+
+**Temel hareket demosunu geçtik; görev odaklı MVP'ye geçiş aşamasındayız.** Oyuncu gemi/mod/deniz koşulu seçip seyir yapabiliyor. Henüz bütün modlara ortak brifing, görev hedefleri, başarısızlık, puanlama ve kayıt sistemi yok.
+
+| Aşama | Durum | Açıklama |
+| --- | --- | --- |
+| MVP-0: hareket ve kumanda | Temel hedef tamamlandı | İleri/tornistan, bağımsız makineler, dümen, kamera ve göstergeler |
+| Genişletilmiş oynanabilir prototip | Mevcut aşama | Dört gemi, liman/boğaz, deniz koşulları, personel/efektler, ANADOLU römorkörleri |
+| Görev tabanlı MVP | Dört gemide ilk sürüm uygulandı | 20 görev, gemiye özgü kilit/kayıt, brifing/sonuç, makine/römorkör ve halat koşulları; cihaz/denge doğrulaması sürüyor |
+| Mobil kalite ve üretim | Bekliyor | Gerçek cihaz build'i, profil/optimizasyon, nihai görsel ve ses |
+| Yayına hazırlık | Bekliyor | Eğitim, kayıt/ayarlar, kararlılık, mağaza paketleri ve kabul |
+
+### Mevcut filo
+
+| Gemi | Mevcut kumanda | Tam ileri oyun sürat hedefi |
+| --- | --- | ---: |
+| TCG BARBAROS — F-244 | Çift makine + dümen; S-70B ve 26 personelli güverte/köprü vardiyası | 32 kn |
+| TCG ANADOLU — L-400 | İki pod için basitleştirilmiş kumanda; limanda iki römorkör | 21 kn |
+| TCG RÜZGAR — P-344 | İki solda/iki sağda dört bağımsız makine; kompakt merkezî kontroller | 41 kn |
+| TCG KUMKALE — P-1203 | Çift makine + dümen; farklı gövde ve üst yapı | 25 kn |
+
+Yeni küçük gemilerde altışar hareketli personel bulunur; BARBAROS'un 26 kişilik ekibi bütün gemilere aynen kopyalanmış değildir. Süratler kontrollü oyun fizik testlerinde hedeflenmiştir; gerçek gemilerin her hava/yük durumundaki performansı iddia edilmez.
+
+### Modlar ve oyuncu akışı
+
+- **Gemi Yanaştırma:** örnek limanda serbest manevra; ANADOLU'da rıhtım seçimi ve römorkör desteği.
+- **Boğaz Geçişi:** kuzeyden güneye ayrı çevre, 12 sıralı kontrol noktası, rota krokisi ve geçiş ilerlemesi.
+- **Şamandıraya Bağlama:** menüde görünür; başlatma pasif, henüz oynanabilir değil.
+- Açılışta gemi/mod seçimi; DENİZ sayfasında beş dalga seviyesi ve sekiz geliş yönü; seyirde MENÜ/Esc ile duraklat/devam.
+- Yeni seyir konum, makineler, dümen ve efektleri sıfırlar. Boğaz kontrol noktaları ve ANADOLU'nun temel yanaşma bildirimi, ortak puanlı görev sisteminin tamamlandığı anlamına gelmez.
+
 ## Güncel geliştirme özeti
+
+### 22 Ekim 2026 — römorkör refakati ve rıhtımdan çekilme
+
+- Sabit dünya hızında geride kalan yaklaşma yerine, geminin ileri/yanal ve yaw kaynaklı istasyon hızını izleyen bağımsız refakat eklendi. İT komutu kapalıyken de takip; 5 kn sınırı yalnız itmeye uygulanır.
+- Temas dışında paralel refakat; açıkta dönme, baş usturmaçasıyla yaklaşma, dur komutunda bordadan açılma. Gerçek temas/yük, makine/baş sınırları ve Rigidbody kuvvet yolu korundu.
+- Örnek limanda kıyılar, görünür rıhtım kapakları, arka duvar, görevdeki bağlı gemiler ve diğer römorkör dikkate alınarak sınırlı yol bulma. Ana geminin etrafından baş/kıç rotası; süpürülmüş tekne izi ve dönüş kontrolüyle duvar geçişi önlenir.
+- Daralan bordayı 12 oyun saniyesi önceden değerlendirme; itişi kesip açık-su bordasına çekilme. Yol yoksa güvenli bekleme, teleport/duvar içinden yetişme yok. Tam römorkör hidrodinamiği veya evrensel COLREG çarpışma önleyici değildir.
+- Bütün 24 görevin test erişimi ve önceki kayıtlar korundu. Bu çalışma için commit/push yapılmadı.
+- Doğrulama: 25 yol/geometri ve 185.342 örnek bazlı runtime kontrolü; dört refakat, dört kıyıdan çekilme ve altı önceki gerçek kuvvet deneyi geçti. Kontrollü ana gemi yollarıdır; gerçek cihaz performansı/serbest kalabalık liman senaryoları doğrulanmadı. Kanıt: `docs/testing/20261022-tug-navigation/`.
+
+### 22 Ekim 2026 — bütün senaryolar test için açık
+
+- `MissionAccessPolicy.AllScenariosUnlockedForTesting = true`: dört gemideki 24 görev, MOB dahil, ön koşulsuz seçilip başlatılabilir. Editor ile sınırlı değil; cihaz build'lerinde de aynı erişim var.
+- Erişim açmak görevleri tamamlamaz/yıldız vermez; mevcut kayıt anahtarları ve gerçek sonuçlar korunur. Sırasız tamamlamaları yüklemede silen eski temizleme kaldırıldı. Devam et, tamamlanan görev sayısını indeks sanmak yerine uygun eksik görevi seçer.
+- Production için politika `false` yapıldığında bütün önceki aşamalar denetlenir; sırasız test sonucu bu denetimi atlatamaz ve kayıt silinmez. Önceki belgelerdeki zorunlu sıralı açılma anlatımı production planıdır; şu an test sürümünde geçerli değildir.
+- Menüde TEST SÜRÜMÜ / bütün görevler açık bilgisi görünür. Bu istek için commit/push yapılmadı.
+- Doğrulama: 101 erişim/kayıt kontrolü ve 96 çalışma zamanı kontrolü geçti; temiz bellek kaydıyla 24 senaryo ters sırada gerçek görev başlatıcısından açıldı. Kanıt: `docs/testing/20261022-open-scenarios/`. Bu kontroller görevlerin tümünün baştan sona elle oynandığı anlamına gelmez.
+
+### 22 Ekim 2026 — dört gemide denize adam düştü eğitimi
+
+- Her geminin zincirine altıncı görev eklendi; beşinci başarıdan sonra açılır. İlk beş ID ve v1 kayıt anahtarı değişmedi. Beş görevli eski kayıtlar genişletilir; eski yıldız/süreler korunur, yeni görev kendiliğinden tamamlanmaz.
+- Alarm, MOB konum işareti, nispi kerteriz/mesafe, gemiye özgü borda istasyonuna yaklaşma, STOP ve elle başlatılan kurtarma. Alarm için sıradan manevra düdüğü veya beş kısa uyarı kabul edilmez.
+- Dalgayı takip eden can yelekli kazazede, işaret çemberi, halat/sapan ve ekip/güverteye alma animasyonu; altı yeni yerel Türkçe anons (toplam 48). Kurtarmada liman sohbeti, römorkör ve rıhtım halatları kapalı.
+- Sürat, gerçek makine yükü, borda hizası, dönüş ve yalpa eşikleri; 4 sn sabit tutma + 8 sn kurtarma. Koşul bozulunca alma işlemi sıfırlanır. Gövde/kıç tehlike sahası ve aradaki süpürülmüş yol kontrol edilir; üstünden geçerek başarı kazanılamaz.
+- Basitleştirilmiş oyun eğitimi; gerçek denizcilik/askerî acil durum talimatı değildir. Kurtarma botu, tıbbi işlem, sürüklenen arama sahası ve belirli MOB dönüş tipi puanlaması kapsam dışında. Ayrıntı ve test sınırları: [Denize adam düştü](DENIZE_ADAM_DUSTU.md).
+- Doğrulama: 141 yeni kural/kayıt ve 34 kontrollü runtime kontrolü geçti; dört geminin kurtarma/sonuç/kayıt bağlantısı ve eski yanaşma regresyonları doğrulandı. Runtime güvenli konum test fikstüründe yapılır; dört serbest yaklaşmanın oynanış dengesi veya gerçek iPhone performansı doğrulanmış değildir.
+- Yerel geliştirme; bu istek için commit/push yapılmadı.
+
+### 22 Ekim 2026 — kompakt seyir arayüzü
+
+- Analog yalpa kadranı üst gösterge paneline taşındı; ayrı sol kart ve yinelenen sayısal yalpa kaldırıldı.
+- Düdük/ses düğmeleri sağ üstte 2 satır × 3 sütun kare düzenine alındı. Ses ayarları yalnız açıldığında görünür; telsiz ve düdük bildirimi mevcut ince durum şeridini kullanır.
+- Gaz/dümen konumları korundu. Eski yalpa/düdük alanları kamera sürüklemesi için serbest; boğaz krokisi boşalan sol alana taşındı ve yalnız görünürken kamera girdisini engeller.
+- İzole Unity doğrulaması: güvenli alanlı/alan dışı, iki/dört makineli 20 yerleşimde 1300 kontrol; düdük sırası, menüde duraklatma, telsiz ve kamera bölgeleri için 10 runtime kontrolü geçti. Gerçek iPhone build/dokunma doğrulaması değildir. Kanıt: `docs/testing/20261022-compact-hud/`.
+- Projede önceden bulunan ANADOLU `consistent edge winding` mesh kontrol hatası bu arayüz çalışmasının dışında kaldı; tüm proje için hatasızlık iddiası yoktur. Bu çalışma için commit/push yapılmadı.
+
+### 22 Ekim 2026 — dört gemiye 20 görev ve fırkateyn römorkörleri
+
+- KUMKALE'nin mevcut beş görevi korunarak BARBAROS, ANADOLU ve RÜZGAR'a beşer yeni görev eklendi. Menüde artık dört geminin de görev zinciri var.
+- BARBAROS: temel sancak/iskele aborda, yalnız baş römorkörü, çift römorkörle dalga, yeni rıhtım/borda planı. ANADOLU: çift destek, ters borda, yalnız kıçla açı kontrolü, dalgalı eş güdüm, rıhtım değişimi.
+- RÜZGAR: ortak dört makine, düşük süratte bağımsız iç/dış makine, dar yer, dalga ve rıhtım değişimi. Özel görevlerde en az 3 s gerçek iç/dış yük farkı gerekir.
+- Römorkörler BARBAROS gövde/temas noktası/uzunluğuna uyarlandı. Özel görevlerde iki destek de 3'er saniye gerçek kuvvet vermelidir; tek römorkör derslerinde önce tek baş/kıç çalışması gerekir. Komut düğmesi, yaklaşan görsel veya açık aralık üzerinden itme puan sayılmaz.
+- Yeni rıhtım emri römorkör bordasını yeniden planlar, komutları ve eski destek kanıtını sıfırlar. Görev rıhtımı HEDEF penceresinden değiştirilemez. Halatlara geçmek için görev çalışması tamamlanmalıdır; sonunda iki halat + düşük sürat/paralellik koşulu korunur.
+- Her gemide ayrı kilit/yıldız/en iyi süre/son görev; eski KUMKALE v1 anahtarı ve beş sabit kimliği değişmedi. Başka geminin ilerlemesi diğerini açmaz.
+- 24 yeni yerel Türkçe kurgu anons (15 özel brifing + 9 ortak filo olayı); toplam 42 WAV. Başka gemilerin telsizi artık KUMKALE diye hitap etmez. JSON metinleri ile altyazı/ses eşlemesi aynı kaynaktan alınır.
+- Filo doğrulaması: 145 kural/kayıt kontrolü, 199 runtime kontrolü, 20 kontrollü sonuç/kayıt döngüsü, BARBAROS/ANADOLU × iki rıhtımda 4 gerçek kuvvet testi. İzole sakin-su itmeleri yaklaşık 10,3–11,1 m'dir; 20 görevin insan tarafından dış başlangıçtan sona kadar oynanmış olduğu iddia edilmez.
+- Ayrıntı ve kanıt: [Filo görevleri](FILO_GOREVLERI.md). Yerel geliştirmedir; bu çalışma için yeni commit/push yapılmadı. Önceki yerel değişiklikler korundu.
+
+### 22 Ekim 2026 — sahilde personel ve fiziksel baş/kıç halatları
+
+- İki rıhtım boyunca 16 yürüyen beyaz üniformalı personel; subay/astsubay esintili basit omuz detayları, yürüyüş ve durup bakınma. Nihai karakter/rütbe doğruluğu iddiası yoktur.
+- Baş ve kıçta iki sahil + iki gemi halatçısı (toplam 8 aktif ekip personeli), iş kıyafeti/can yeleği, el incesi atış yayı ve ana halatın alınması/çekilmesi/bağlanması.
+- Dört gemi + liman modunda yakında açılan BAŞ/KIÇ HALAT AL ve FORA paneli. İlk uç bağlanınca ikinci uç alınır; düşük sürat/paralellik/STOP koşulları gösterilir.
+- İki bağımsız gerilim hattı, tek taraflı sönümlü yay ve Rigidbody.AddForceAtPosition: çekme gerçek yanal ilerleme ve baş/kıç dönmesi üretir, gemi konumuna yazılmaz. Menüde aşama/kuvvet durur; makine verince çekme bekler, aşırı uzaklaşma/süratte ekip bırakır.
+- KUMKALE'de iki halat bağlanmadan ve gemi sakinleşmeden görev geçmez. ANADOLU'da halat kullanılırken römorkör kuvveti kesilir; yanaştı sonucu artık iki uç bağlanmasına dayanır.
+- 66 kural + 108 runtime kontrolü; dört gemi × iki rıhtımda 8 izole fizik çevrimi (yaklaşık 5,2–5,7 m gerçek çekme, 57–59 oyun saniyesi) geçti. 84+85 kariyer/sinyal/ses regresyon kontrolleri de geçti; kariyer testleri bellek kaydı kullanır.
+- Ağır denizde bütün görevlerin insanla tamamlanması, gerçek cihaz performansı ve gerçek halat emniyeti doğrulanmış değildir. Önceden kalan ANADOLU kenar-yönü uyarısı ve su/gövde görsel sorunları kapsam dışıdır.
+- Ayrıntı: [halat ve sahil personeli](HALAT_VE_SAHIL_PERSONELI.md). Bu çalışma henüz commit/push yapılmadı; önceki yerel değişiklikler korundu.
+
+### 22 Ekim 2026 — KUMKALE kariyeri, Türkçe telsiz ve zorunlu düdükler
+
+- Menüye GÖREVLER sekmesi eklendi. KUMKALE için beş görev: sancak aborda, iskele aborda, iki geminin arasına, bordadan dalga ve telsizle rıhtım değişikliği.
+- Başlangıçlar mendireğin dışında, yaklaşık 560–640 m mesafede. Brifingde fizik durur; oyuncu onaylayınca 3 kn ilk ileri hareketle başlar.
+- Üç sıralı giriş kapısı, görev başına farklı rıhtım/koşullar, beş saniye konum/baş/düşük boyuna ve yanal sürat koşulu, temas/ihlal değerlendirmesi ve sonuç ekranı eklendi.
+- Bir görevi geçince sıradaki açılır; bir yıldız yeterlidir. Eski görevler tekrar oynanır, başarısız tekrar eski başarı/yıldızları silmez.
+- Sabit görev kimlikleriyle gemiye özgü sürümlü yerel kayıt; 0/5…5/5 ilerleme, kilit/hazır/tamamlandı kartları, en iyi süre ve yıldızlar. Bulut ve anlık sefer konumu kaydı yoktur.
+- 18 kurgu Türkçe telsiz WAV'ı yerel Tolga sesiyle üretildi; olay anonsları, periyodik kanal konuşmaları, hafif parazit, altyazılar ve ses ayarı eklendi. Gerçek askerî telsiz kayıtları kullanılmadı.
+- Sentezlenmiş düdük ve deniz uğultusu eklendi. Klavye H/1, 2, 3, L, 5 ve ekrandaki düğmelerle işaret seçilir.
+- Görüşteki eğitim gemileri bağlamında 1 kısa sancak / 2 kısa iskele rota değişikliği; 3 kısa tornistan sevk izlenir. Geriye sürüklenme ile tornistan sevk ayrıldı. Sinyal kendiliğinden çalmaz; oyuncunun seçtiği dizinin bitmesi beklenir.
+- Sinyalin görev toleransı içinde verilmemesi başarısızlıktır. 15 s tolerans ve tespit eşikleri oyuna aittir, tam COLREG uygulaması değildir.
+- Menüde ses ve fizik duraklar; yeni sefer eski ses kuyruğunu temizler. Görev denizi sabittir, serbest seyirde ayarlar kullanılabilir.
+- 84 kural/kayıt/sinyal/yerleşim kontrolü ve 85 runtime kontrolü geçti; 18 sesin yüklenmesi, beş görev/kayıt döngüsü ve önceki serbest seyir/ANADOLU/boğaz akışı doğrulandı. Testler oyuncunun gerçek kariyerini değiştirmeyen bellek depolaması kullanır.
+- Beş görevin sonuç testleri kontrollü konum/sürat/baş örnekleri kullanır; hepsinin insan tarafından gerçek cihazda baştan sona oynandığı veya dengelendiği iddia edilmez.
+- Ayrıntı ve kaynak: [Görevler ve sesler](GOREVLER_VE_SESLER.md); kanıt: [görev testleri](testing/20261022-missions/).
+- Bu görev/ses çalışması henüz yeni commit/push yapılmış değildir.
+
+### 22 Ekim 2026 — ANADOLU römorkörleri ve yaklaşırken itme düzeltmesi
+
+- Deniz Kuvvetleri liman römorkörleri için ÖNDER ve Y57 fotoğrafları incelendi. Özgün gri destek römorkörü modeli; yuvarlatılmış kapalı gövde, ağır baş/yan usturmaçaları, köprüüstü camları, direk/radar, çift baca, ırgat, babalar, kıç vinci ve personel eklendi. Model, belirli bir gerçek teknenin ölçülmüş birebir kopyası değildir.
+- Özellik yalnız **ANADOLU + Gemi Yanaştırma** modunda çalışır; diğer gemilere ve boğaz moduna filo eklenmez.
+- Liman kontrol penceresi doğu/sancak aborda veya batı/iskele aborda hedefini sorar. Turkuaz çerçeve hedef konumu gösterir.
+- Baş ve kıç römorkörleri ayrı seçilebilir. Römorkör üzerindeki işaret ya da **BAŞ İT / KIÇ İT** kartı komut verir; tekrar tıklama bırakır, **İKİSİ DUR** iki komutu keser.
+- Sancağa yanaşırken iskeledeki, iskeleye yanaşırken sancaktaki römorkörler iter. Temas sonrası kademeli kuvvet uygulanır; tek römorkör ayrı dönme momenti oluşturur. ANADOLU transform ile kaydırılmaz, Rigidbody kuvvetiyle hareket eder.
+- İtme 5 kn altında, tam destek 2 kn ve altında; baş 000° ±30° koşulunda çalışır. Temassız, menü/hedef penceresi açık veya yaklaşma sahası dışında itme yoktur. Hedef, baş ve düşük sürat uygun olduğunda temel “YANAŞMA TAMAMLANDI” bildirimi verilir.
+- İlk denemede römorkörler bordada görünmesine rağmen son rıhtımın ±48 m alanı dışında kuvvet uygulanmıyordu. Gereksiz yakınlık sınırı kaldırılıp liman yaklaşma sahasına genişletildi; ilerlerken de destek çalışır.
+- **Gerçek uygulanan itme yüzdesi ve yanal sürat** panele eklendi. Kuvvet yokken yanıltıcı ok çizilmez; temasta bekleme ile itme ayrıldı.
+- Borda değişiminde geminin başı/kıçı etrafından dolaşma eklendi. Römorkörün kendi intikali basitleştirilmiş kinematik harekettir; genel engelden kaçınma ve halatla çekme yoktur.
+- 747 kural/gövde/yerleşim, 56 entegrasyon kontrolü ve altı ayrı fizik deneyi geçti. İki römorkörle 30 saniyede yaklaşık 6,1 m yanal hareket; yalnız baş/kıçla zıt dönüş momentleri ölçüldü.
+- Ana Unity projesinde rıhtım seçimi, bağımsız it/dur, iki römorkörü durdurma ve yaklaşık 0,35 kn canlı yanal sürat PC'de kontrol edildi. Temiz ANADOLU seferi açıldı; iPhone native build testi yapılmadı.
+- Ayrıntılar ve fotoğraf kaynakları: [ANADOLU römorkörleri](ANADOLU_ROMORKOR.md). Kalıcı kanıtlar: [römorkör testleri](testing/20261022-tugs/).
+
+### 22 Ekim 2026 — toplu commit/push ve README
+
+- Menü/modlar, dört gemi, dört makine kumandası, dalgalar, fizik/yalpa, römorkörler, test kayıtları ve belgeler **150 dosyalık** güncelleme olarak commit edildi.
+- Commit: [2ecae49](https://github.com/malibu61/meridian/commit/2ecae49f5bd2c728a3beb28451713cebf2ca0eca); hedef **malibu61/meridian → main**.
+- Push sonrasında GitHub main SHA'sı yerel HEAD ile karşılaştırıldı; çalışma ağacı temizdi.
+- README; kurulum, gemiler, modlar, kumandalar, römorkörler, deniz/fizik, testler, bilinen eksikler ve görev önerileriyle yeniden düzenlendi.
+- **Bu ana durum belgesinin şimdiki güncellemesi, yukarıdaki commit'ten sonradır; bu belge güncellemesinde ayrıca commit/push yapılmadı.**
 
 ### 22 Ekim 2026 — RÜZGAR, KUMKALE, dört makine ve gemi hareketi
 
@@ -26,7 +155,7 @@ Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel k
 - Yalnız RÜZGAR: dış/iskele, iç/iskele, iç/sancak ve dış/sancak için dört bağımsız gaz kolu; merkezde kompakt dümen ve dört makineye ortak gaz. Eski üç geminin iki kollu düzeni korunur.
 - Knot hesabındaki 4:1 model ölçeği düzeltildi. Gemiye özel sürat hedefi, dümen geçişi, gecikmeli dairesel dönüş, dönüşte dışa yatış ve yönlü rezonanslı yalpa eklendi. Analog kadranın güncel aralığı ±40° oldu; aşağıdaki ±20° kayıtları tarihsel sürümdür.
 - Sert borda denizi ile baş/kıç denizi artık farklı eksen tepkisi üretir. Gerçek GM/GZ/RAO, gizli manevra kartı veya devrilme sertifikası iddiası yoktur. [Sürat/dönüş/yalpa, kaynaklar ve son testler](SURAT_DONUS_YALPA.md).
-- Aktif proje `meridian` klasöründedir. Bu değişikliklerde yeni commit/push yapılmadı. Önceki test/gönderim kayıtları aşağıda korunur.
+- Aktif proje `meridian` klasöründedir. Bu geliştirmeler sonradan 22 Ekim 2026 tarihli `2ecae49` commit'iyle push edildi.
 - Son tur: 39 fizik senaryosu/89 kontrol, 7949 yeni gövde geometri kontrolü, 150 canlı model/mod kontrolü, 515 dört-kol mantık ve 69 canlı kumanda kontrolü geçti. Önceki kontrol regresyonu 727/22 geçti. Son C# kaynak derlemesi başarılıdır.
 - RÜZGAR 41, KUMKALE 25, BARBAROS 32, ANADOLU 21 kn ölçüldü. Sert borda denizinde yeni küçük gemiler yaklaşık 34,7°/33,1° tepe yalpası verdi. Bunlar kontrollü oyun fizik testi sonuçlarıdır; gerçek cihaz/deniz denemesi değildir.
 - 18 offscreen gemi renderı üretildi. Batch modunda HUD görüntüsü oluşmadığı ve açık editörün fare kontrolü kesildiği için yeni HUD için etkileşimli görsel onay/gerçek parmak testi yapılmış sayılmaz. Açık eski Play oturumunun durdurulup yeniden başlatılması gerekir. Ayrıntı ve ham kanıtlar yukarıdaki fizik belgesindedir.
@@ -34,7 +163,7 @@ Bu belge güncel ana geliştirme kaydıdır. Eski MVP planı en sonda tarihsel k
 ### 22 Ekim 2026 — sarkaçlı analog yalpa kadranı
 
 - Referans eğimölçerin mantığında altta sıfır, çift yönlü derece yayı ve hareketli ibre eklendi. Ayrı sol üst panel ve başlıktaki sayı aynı fiziksel yalpa verisini kullanır.
-- ±20° ölçüm aralığı küçük yatışları görünür kılan geniş grafik yaya yayılır. Ölçek dışına çıkıldığında sayı gerçek açıyı korur, ibre sınırda kalır ve uyarı gösterilir. Bu bir gemi stabilite sınırı değildir.
+- İlk sürümde ±20° olan ölçüm aralığı, küçük gemi fiziği güncellemesiyle **±40°** oldu. Dereceler geniş bir grafik yaya yayılır. Ölçek dışına çıkıldığında sayı gerçek açıyı korur, ibre sınırda kalır ve uyarı gösterilir. Bu bir gemi stabilite sınırı değildir.
 - Yeni panel ortak safe-area yerleşimine/kamera engeline dahil edildi; makine/dümenle çakışmaz ve komut üretmez. Test kapsamı ve görüntüler: [Analog yalpa kadranı](YALPA_KADRANI.md).
 - Genişletilmiş turda 727 mantık/yerleşim ve 22 canlı kontrol geçti. İskele 10°, denge ve sancak 10° Game View görüntüleri ayrı incelendi.
 
@@ -83,7 +212,7 @@ Proje, başlangıçtaki basit blok prototipten oynanabilir bir TCG BARBAROS (F-2
 - Unity 6.6 ve C# tabanlı proje oluşturuldu.
 - Ana sahne ve çalışma anında sahneyi kuran başlangıç sistemi hazırlandı.
 - Proje Git deposuna dönüştürüldü ve `malibu61/meridian` GitHub deposuna ilk prototip gönderildi.
-- Gemi dış modeli, helikopter/personel ve zoom `376beb7`; baca dumanı ve önceki belge güncellemesi `45677bb` commit'inde gönderildi. Menü ve ayrı Boğaz Geçişi prototipi daha sonraki yerel geliştirmedir. Ayrıntı: aşağıdaki sürüm geçmişi.
+- Gemi dış modeli, helikopter/personel ve zoom `376beb7`; baca dumanı ve önceki belge güncellemesi `45677bb` commit'inde gönderildi. Menü ve ayrı Boğaz Geçişi dahil sonraki geliştirmeler `2ecae49` içinde gönderildi. Ayrıntı: aşağıdaki sürüm geçmişi.
 - Unity dışındaki geçici derleme kopyaları ve Unity Console üzerinden kod kontrolleri yapıldı.
 
 ### Tamamlanan gemi hareket sistemi
@@ -96,7 +225,7 @@ Proje, başlangıçtaki basit blok prototipten oynanabilir bir TCG BARBAROS (F-2
 - Makine komutları doğrudan tam kuvvete çıkmıyor; büyük gemi hissi için gecikmeli cevap veriyor.
 - Boyuna direnç, yüksek yanal direnç ve açısal sönüm uygulanıyor.
 - Dümen `-35°…+35°` aralığında ayarlanabiliyor ve su akışı arttıkça etkisi güçleniyor.
-- Acil stop iki makine komutunu birlikte sıfırlıyor; geminin mevcut süratini anında sıfırlamaz.
+- Acil stop aktif geminin bütün makine komutlarını sıfırlar; geminin mevcut süratini anında sıfırlamaz. Römorkörler için ayrıca İKİSİ DUR komutu vardır.
 - Bu, ayarlanabilir bir oyun fiziğidir. Gerçek hidrodinamik katsayılar, gerçek makine tesisatı ve geminin ölçülmüş manevra karakteristiğiyle doğrulanmış bir mühendislik simülasyonu değildir.
 
 ### TCG BARBAROS (F-244) görsel modeli
@@ -117,7 +246,7 @@ Model, kamuya açık dış görünüş fotoğrafları ve MEKO 200 TN Track II-A'
 - Borda lombozları ve güverte korkulukları
 - Her iki bordada gövde yüzeyine oturan dolu stencil geometrili `F244` numarası; iskele/sancak sırası ayrı hesaplanır. Önceki havada duran TextMesh yaklaşımı bu modelde kullanılmaz.
 - Kıç gönderinde prosedürel dokuyla oluşturulan Türk bayrağı
-- Hafif yalpa ve baş-kıç hareketi veren görsel gemi hareketi
+- İlk görsel salınımın yerini alan, ortak dalga alanından gerçek Rigidbody'ye uygulanan yalpa/baş-kıç/düşey hareket
 
 Bu model önceki blok fırkateynin yerini aldı. Modelin donanım düzeninde kamuya açık 2009–2022 fotoğrafları esas alındı; modernizasyon dönemleri rastgele karıştırılmamalıdır. Ayrıntılı dış model, sekiz genel açı ve personel/helikopter yakın planlarıyla tekrar tekrar kontrol edildi. Kapalı gövde ve üst yapı yüzeyleri düzeltildi; köprü yan kapılarındaki açıklıklar personel geçişi için bilerek bırakıldı ve iç taban/bölmeler eklendi. Mevcut model fotoğraf referanslı, stilize/prosedürel bir oyun modelidir; foto-gerçekçi nihai model için Blender'da ölçülü modelleme, UV ve PBR kaplama çalışması gereklidir.
 
@@ -125,14 +254,14 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 
 ### Deniz ve efektler
 
-- Sabit düzlem yerine yaklaşık 2.000 köşeli dinamik deniz mesh'i kullanılıyor.
+- Sabit düzlem yerine, gemi çevresinde sıklaştırılmış ve ortak dalga alanına göre güncellenen dinamik deniz mesh'i kullanılıyor; ilk sürümdeki yaklaşık 2.000 köşe bilgisi güncel bütçe değildir.
 - Birbiriyle kesişen sinüs dalgalarıyla hareketli su yüzeyi oluşturuluyor.
 - Prosedürel deniz dokusu kaydırılarak küçük yüzey hareketleri destekleniyor.
 - İskele ve sancak pervaneleri için ayrı kıç suyu parçacıkları bulunuyor.
 - Sürate göre artan baş köpüğü efekti bulunuyor.
 - Kıyı ve liman duvarlarında köpük şeritleri bulunuyor.
 - Deniz üzerindeki görsel hareket mobil performans düşünülerek düşük maliyetli tutuldu.
-- İki bacaya makine yükünü ayrı izleyen egzoz dumanı eklendi; normal/ani yük davranışları aşağıdaki özel bölümde kayıtlıdır. Temel duman sürümü `45677bb` ile gönderildi; mod değişiminde duman sıfırlama daha sonraki yerel eklemedir.
+- İki bacaya makine yükünü ayrı izleyen egzoz dumanı eklendi; normal/ani yük davranışları aşağıdaki özel bölümde kayıtlıdır. Temel duman sürümü `45677bb`, mod değişimi sıfırlama ve sonraki uyarlamalar `2ecae49` ile gönderildi.
 
 ### Liman ve çevre
 
@@ -165,13 +294,14 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 - Sol tarafta iskele, sağ tarafta sancak makine kolu bulunuyor.
 - Alt orta bölümde dümen sürgüsü ve acil stop düğmesi bulunuyor.
 - Canlı sürat (`kn`), baş, rota ve makine durumu gösteriliyor.
-- HUD başlığında `TCG BARBAROS • F-244` kimliği bulunuyor.
+- HUD başlığında seçili geminin adı/borda numarası; sürat, baş, rota, yalpa ve makine bilgileri bulunur. Römorkör panelinde ek olarak yanal sürat gösterilir.
 - Panel, kenarlık, kontrol bölgeleri ve düğmeler farklı ekran boyutlarına göre ölçekleniyor.
 - Klavye desteği geliştirme ve masaüstü testi için korunuyor.
 
 | Girdi | İşlev |
 | --- | --- |
-| `W / S` | İki makineyi birlikte ileri/tornistan ayarlar |
+| `W / S` | Aktif gemide bütün makineleri ileri/tornistan kademeler |
+| `Z / X`, `C / V` | Yalnız RÜZGAR: iç iskele, iç sancak makinelerini kademeler |
 | `Q / A` | İskele makinesini ayarlar |
 | `E / D` | Sancak makinesini ayarlar |
 | `← / →` | Dümeni iskele/sancağa basar |
@@ -197,44 +327,55 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 
 ## Güncel aşama değerlendirmesi
 
-| Bölüm | Durum |
+| Bölüm | Güncel durum |
 | --- | --- |
-| Unity proje iskeleti | Tamamlandı |
-| Çift makine ve dümen fiziği | Oynanabilir prototip; gerçek gemi kalibrasyonu yapılmadı |
-| Masaüstü ve dokunmatik kontroller | Uygulandı; fiziksel mobil cihaz doğrulaması bekliyor |
-| Canlı seyir göstergeleri | Mevcut; metre/model birimi tutarlılığı düzeltilmeli |
-| Yörünge kamera sistemi | Tamamlandı |
-| Stilize TCG BARBAROS modeli | MVP için tamamlandı |
-| Dinamik deniz ve kıç suyu | MVP için tamamlandı |
-| Liman çevresi | İlk görsel geçiş tamamlandı |
-| S-70B Seahawk | Park edilmiş prosedürel dış model mevcut; uçuş yok |
-| Güverte ve kırlangıç personeli | 26 kişi; halat, gözcü ve yürüme animasyonları mevcut |
-| Fare/klavye zoom ve mobil pinch | Uygulandı; 23 mantık kontrolü ve PC canlı test kaydı mevcut |
-| Makine yüküne bağlı baca dumanı | `45677bb` ile gönderildi; 17 tepki kontrolü ve canlı bağlantı test kaydı mevcut |
-| Menü ve mod seçimi | Açılış, MENÜ/Esc, duraklat/devam ve yeniden başlat akışı eklendi |
-| Çanakkale kuzey–güney geçişi | Ayrı oynanabilir taslak; 12 sıralı kontrol noktası, kıyı ve köprü silüetleri |
-| Şamandıraya bağlama | Yakında kartı; başlatma pasif, görev henüz yok |
-| Gerçek OSM/DEM coğrafyası, akıntı ve streaming/floating origin | Henüz uygulanmadı; elle hazırlanmış yaklaşık koordinatlı taslak bunların yerine geçmez |
-| Yanaşma hedefi ve görev sonucu | Henüz yapılmadı |
-| Rıhtım çarpışma/hasar geri bildirimi | Henüz tamamlanmadı |
-| Ses sistemi | Henüz yapılmadı |
-| Android gerçek cihaz testi | Henüz yapılmadı |
-| Performans profili ve optimizasyon | Henüz yapılmadı |
-| Ayarlar, kayıt ve ana menü | Henüz yapılmadı |
-| Blender nihai gemi modeli ve PBR kaplama | Sonraki üretim aşaması |
+| Unity proje iskeleti / Git | Hazır; aktif proje meridian, son toplu geliştirme main'e gönderildi |
+| Filo | BARBAROS, ANADOLU, RÜZGAR, KUMKALE seçilebilir |
+| Makine/dümen | İki veya dört bağımsız makine; kademeli komut, ortak gaz, sınırlı dümen geçişi |
+| Sürat ölçeği | 1 birim = 4 m hesabı düzeltildi; gemiye özel oyun hedefleri doğrulandı |
+| Dönüş ve yatış | Gecikmeli dönüş çemberi ve dışa yatış uygulandı; gerçek gemi deneme verisiyle doğrulanmadı |
+| Dalga ve yalpa | Beş oyun seviyesi, yön seçimi, fiziksel gövde tepkisi, ±40° kadran |
+| Deniz/köpük/duman | Uygulandı; su-gövde etkileşimi ve nihai görsel kalite eksikleri sürüyor |
+| Kamera / kumanda | Fare, klavye, dokunma, orbit ve pinch mevcut; native mobil doğrulama bekliyor |
+| Mod menüsü | Açılış, gemi/mod/deniz seçimi, duraklat/devam mevcut |
+| Liman | Taslak kıyı, rıhtım, mendirek, yapılar, fener ve şamandıralar |
+| ANADOLU römorkörleri | İki bağımsız itme komutu, hedef popup'ı, gerçek yanal kuvvet ve göstergeler |
+| ANADOLU yanaşma bildirimi | Temel konum/baş/sürat kontrolü var; ortak puanlı görev sistemi değil |
+| Boğaz geçişi | Ayrı oynanabilir taslak; 12 sıralı kontrol noktası |
+| Gerçek coğrafya / akıntı | OSM/DEM, batimetri, akıntı, streaming/floating origin uygulanmadı |
+| Helikopter / personel | Park S-70B ve hareketli stilize ekipler var; uçuş ve gerçek operasyon prosedürü yok |
+| Şamandıra / fiziksel halat | Kıyı baş/kıç halatları indirgenmiş kuvvet modeliyle var; şamandıra görevi ve römorkör yedekleme halatı yok |
+| Görev/kariyer sistemi | KUMKALE için beş görev, brifing/sonuç, yıldız ve yerel kayıt var; diğer gemiler bekliyor |
+| Çarpışma / hasar | Temel çarpıştırıcılar var; güvenilir görev ihlali/hasar değerlendirmesi tamamlanmadı |
+| Mobil test / yayın | iOS profili ve Remote denemesi var; native cihaz ölçümleri/yayın paketi onayı yok |
+| Ses / ayarlar / kayıt | Telsiz, düdük, deniz sesi ve ses ayarı; yerel kariyer kaydı var. Diğer ayarlar/bulut/sefer kaydı yok |
+| Nihai model / PBR | Prosedürel görsel prototip var; ölçülü Blender/UV/PBR üretimi tamamlanmadı |
+
+**Sonuç:** “Gemi kullanma ve çevreyle etkileşim prototipi” hazır; “görevlerle oynanıp cihazda doğrulanmış yayın MVP'si” henüz hazır değil.
 
 ## Önemli kaynak dosyalar
 
 | Dosya | Sorumluluk |
 | --- | --- |
 | `PrototypeBootstrap.cs` | Gemi, liman, ışık, malzeme ve sahnenin çalışma anında kurulması |
-| `ShipController.cs` | İki makine, dümen, direnç ve gemi hareketi |
+| `ShipController.cs` | Gemiye göre iki/dört makine, dümen geçişi, direnç, dönüş ve sürat |
+| `VesselCatalog.cs` | Dört geminin kimliği, boyutları, sürat ve oyun hareket profilleri |
+| `ShipBuoyancy.cs` | Dalga örnekleme, düşey/yalpa/baş-kıç ve yatay dalga kuvveti |
+| `SeaStateSettings.cs`, `WaterWaves.cs` | Deniz seviyesi/yön seçimi ve ortak dalga alanı |
+| `HelmLayout.cs`, `HelmPointerRouter.cs`, `ThrottleDetents.cs` | Güvenli alan, bağımsız giriş sahipliği ve kademeli gaz |
+| `MaritimeUiTheme.cs`, `RollGauge.cs` | Ortak UI teması ve analog yalpa kadranı |
+| `AnadoluModelBuilder.cs` | ANADOLU gövde, uçuş güvertesi ve ada üst yapısı |
+| `SmallCraftHull.cs`, `SmallCraftModelBuilder.cs` | RÜZGAR/KUMKALE gövde ve farklı donanımları |
+| `SmallCraftMotion.cs`, `SmallCraftDeckLife.cs` | Küçük gemi hareketli parçaları ve altışar personel |
+| `TugAssistRules.cs`, `TugAssistController.cs` | ANADOLU rıhtım hedefi, komutlar, temas, kuvvet ve yanal sürat |
+| `HarborTugModel.cs` | Özgün donanma tipi liman römorkörü görseli |
+| `HullWaveImpacts.cs`, `BowWaveSheet.cs`, `ShorelineWash.cs` | Borda sıçraması, baş köpüğü ve kıyı yıkaması |
 | `FollowCamera.cs` | Fare ve dokunmatik yörünge kamerası |
 | `OrbitZoomInput.cs` | Zoom/pinch giriş durumu, aralıklar ve panel hareketi ayrımı |
 | `PrototypeHud.cs` | Göstergeler ve mobil kumandalar |
 | `OceanSurface.cs` | Dinamik deniz mesh'i ve dalgalar |
 | `WakeTrail.cs` | Pervane izi ve baş köpüğü |
-| `ShipVisualMotion.cs` | Görsel yalpa ve salınım |
+| `ShipVisualMotion.cs` | Eski model kökü işaretçisi; güncel gövde salınımını fizik üretir |
 | `RotatingRadar.cs` | Radar dönüş animasyonu |
 | `BeaconPulse.cs` | Deniz feneri ışığı |
 | `BarbarosModelBuilder.cs` | Kapalı gövde, donanım, stencil borda numaraları ve gemi dış modelinin üretimi |
@@ -256,20 +397,28 @@ Ayrıntılı referans ve düzeltme kaydı: [Barbaros görsel incelemesi](BARBARO
 | `VoyageProgress.cs` | Sıralı ve hareket yönünü kontrol eden oyun geçiş noktaları |
 | `EnvironmentResources.cs` | Mod değişiminde üretilmiş mesh/malzemelerin temizliği |
 | `Assets/Editor/ModeSelectionReview.cs` | Rota, mod değişimi ve canlı hareket/duraklatma testleri |
+| `Assets/Editor/ShipHandlingReview.cs` | Sürat, dönüş, dışa yatış ve dalga fiziği deneyleri |
+| `Assets/Editor/SmallCraftReview.cs`, `SmallCraftControlReview.cs` | Küçük gemi modeli ve dört makine kontrolleri |
+| `Assets/Editor/TugAssistReview.cs` | Römorkör gövdesi, kapsam, yaşam döngüsü ve altı fizik deneyi |
+
+## Görev senaryoları — ilk KUMKALE zinciri uygulandı
+
+KUMKALE'de sancak aborda, iskele aborda, dar yere yanaşma, bordadan dalga ve rıhtım değişikliği görevleri oynanabilir ilk sürüm olarak eklendi. Her biri dış başlangıç → brifing → sıralı giriş → yanaşma → sonuç akışını kullanır. Başarı yeni görevi açar; yıldızlar ve ilerleme yerelde saklanır.
+
+Diğer gemilerin görevleri, ANADOLU'nun puanlı römorkör görevi, boğaz görev kısıtları, arıza/görüş senaryoları ve şamandıra görevi hâlâ sonraki kapsamdır. İlk beş görev için gerçek cihaz oynanış dengesi, eğitim netliği ve farklı oyuncuların tamamlayabilirliği ölçülmelidir.
 
 ## Sıradaki önerilen geliştirme sırası
 
-Bu sıra bir öneridir; bu belgeyi güncellemek uygulama veya yeni bir push başlatmaz.
+1. Mevcut prototipte su-gövde kesişmesi, ANADOLU geometri uyarısı ve yeniden derlemede kimlik eşleşmesi riskini ele alma.
+2. Uygulanan KUMKALE görevlerini oynanış/cihaz testleriyle dengeleme; ortak yapıya ANADOLU'nun römorkörlü görevini ekleme.
+3. Liman girişini ve boğaz kontrol noktalarını aynı görev yapısına bağlama; çarpışma/sürat/rota değerlendirmesini ekleme.
+4. Native iPhone/Android build'i üzerinde gerçek parmak, safe-area, kare zamanı, ısınma, bellek ve uzun oturum testi; hedef cihaz önceliğini kesinleştirme.
+5. Çanakkale için gerçek kıyı/yükseklik verisi ve koordinat/ölçek standardını koruyan arazi üretimi; kalite örneği ve akıntı.
+6. Gemi/sahil/su görselleri, Blender/UV/PBR, LOD ve cihaz kalite ayarlarını geliştirme.
+7. Mevcut telsiz/düdük/deniz sesi ve kariyer kaydını geliştirme; kısa eğitim, diğer ayarlar ve sefer kaydını tamamlama.
+8. Yayın öncesi hata/performans kabulü ve mağaza paketleri.
 
-1. Çanakkale kapsamını ve gerçek ölçek standardını kesinleştirme; mevcut metre/model birimi uyumsuzluğunu kontrollü düzeltme.
-2. Coğrafi verileri indirip kıyı, yükseklik ve kapsama hatalarını karşılaştırma; bütün boğazın sade coğrafi iskeletini çıkarma.
-3. Nara–Çanakkale–Kilitbahir bölümünü görsel kalite örneği yapma; yakın/uzak arazi yükleme ve koordinat altyapısını kurma.
-4. Köprü ve diğer önemli yapılarla tam güzergâhı ayrıntılandırma; akıntı, görev kontrol noktaları ve geçiş kaydını ekleme.
-5. Liman eğitimini koruma; yanaşma hedefi, başarı/başarısızlık ve güvenilir çarpışma geri bildirimini tamamlama.
-6. Gerçek Android cihazda dokunmatik, CPU/GPU, bellek ve uzun süreli seyir testi; kalite seviyeleri.
-7. Makine/deniz/rüzgâr/düdük sesleri, ana menü, ayarlar ve kısa eğitim.
-8. Ölçülü nihai gemi modeli, UV/PBR ve dönem doğrulaması; yayın kabul çalışması.
-9. Yerel duman ve belge değişiklikleri için ancak ayrıca istendiğinde commit/push.
+Bu sıra bir öneridir; belge güncellemesi bu işleri otomatik uygulamaz ve yeni commit/push başlatmaz.
 
 ## S-70B ve hareketli personel — tamamlananlar
 
@@ -291,7 +440,7 @@ Bu sıra bir öneridir; bu belgeyi güncellemek uygulama veya yeni bir push baş
 | Toplam | 26 | Ekip sayıları içeride bekleyenleri de kapsar |
 
 - Halatçılar yaklaşık 3,6 saniyelik faz farkları olan döngülerde kol/dirsek/el ve bacak pozlarını değiştirir; eller halat hattını izler.
-- Baş/kıçta baba, eğitim halatı ve yedek halat istifi bulunur. Halat bir görsel çalışma döngüsüdür; kıyıya bağlı fiziksel palamar veya makine emniyet kilidi değildir.
+- Eski NavalDeckLife baş/kıç baba, eğitim halatı ve yedek halat istifi dekoratif döngüdür. Yeni MooringController liman modunda buna ek, ayrı sahil bağlantılı fiziksel halat ekipleri oluşturur; makine komutu varken çekmeyi bekletir.
 - Beş yürüyen personel köprü içinden yan kapıya, kırlangıç yoluna ve dış gözetleme noktasına gider; sonra geri döner. İskele ekibi aynı kapıda yığılmamak için sırayla hareket eder.
 - Köprü yan duvarlarında gerçek açıklıklar, söve/eşik, içe açık kapı kanadı, iç taban ve koyu bölmeler oluşturuldu. İçerideki personel ışınlanarak değil, dış yapıyla doğal biçimde örtülür.
 - Yürüyüşte adım, ayak kaldırma, diz ve karşı kol salınımı; gözcülerde baş çevirme ve dürbün hareketi bulunur. Animasyon geminin yerel koordinatlarını izler; poz tamponları tekrar kullanılır.
@@ -300,7 +449,7 @@ Bu sıra bir öneridir; bu belgeyi güncellemek uygulama veya yeni bir push baş
 
 Kaynak fotoğraflar, ayrıntılar ve test ölçümleri: [Güverte yaşamı](GUVERTE_YASAMI.md).
 
-## Makine yüküne bağlı baca dumanı — yerel geliştirme
+## Makine yüküne bağlı baca dumanı — tamamlanan ve gönderilen geliştirme
 
 - Her bacada ayrı parçacık sistemi var. Çıkışlar gemiyle hareket eder; çıkan duman dünya koordinatında kalır ve gemiye yapışmaz.
 - Gerçeklenen iskele/sancak makine yükleri ayrı okunur. Hafif rölanti, normal seyir ve ani yüksek yol emri birbirinden ayrılır.
@@ -315,7 +464,30 @@ Ayrıntılar: [Baca dumanı](BACA_DUMANI.md).
 
 ## Toplu test ve doğrulama kaydı
 
-Aşağıdakiler önceki geliştirme döngülerinden kayıtlı sonuçlardır. 19 Ekim belge güncellemesinde test araçları ve çıktı dosyalarının varlığı incelendi; tüm testler yeniden çalıştırılmadı. Bunlar yayın sertifikasyonu veya fiziksel Android cihaz testi yerine geçmez.
+Bu bölüm geliştirme sırasında kaydedilmiş sonuçları özetler. **Bu son belge güncellemesi yeni test/derleme çalıştırmadı**; kaynaklar, mevcut test kayıtları ve Git durumu kontrol edildi. Kontrol sayıları farklı test grupları/sürümlerine aittir; bağımsız benzersiz testlerin tek toplamı gibi birleştirilmemelidir.
+
+### Son doğrulanmış kayıtlar — 22 Ekim 2026
+
+| Alan | Sonuç | Kanıt / sınır |
+| --- | --- | --- |
+| Yeni küçük gemi gövdesi | 7.949 kontrol PASS | [Geometri](testing/20261022-smallcraft/model-geometry.txt) |
+| Model/mod çalışma zamanı | 150 kontrol PASS | [Runtime](testing/20261022-smallcraft/model-runtime.txt) |
+| Dört makine kumandası | 515 mantık + 69 runtime kontrol PASS | [Mantık](testing/20261022-smallcraft/four-control-logic.txt), [runtime](testing/20261022-smallcraft/four-control-runtime.txt) |
+| Sürat/dönüş/yalpa | 39 fizik senaryosu / 89 kontrol PASS | [Fizik](testing/20261022-smallcraft/handling-result.txt) |
+| Römorkör kuralları/gövde/yerleşim | 747 kontrol PASS | [Kurallar](testing/20261022-tugs/rules.txt) |
+| Römorkör entegrasyonu | 56 kontrol / 6 fizik senaryosu PASS | [Runtime](testing/20261022-tugs/runtime.txt), [ölçüm](testing/20261022-tugs/physics.txt) |
+| Kaynak derleme | Önceki test turlarında başarılı | Geometri kontrolündeki mevcut ANADOLU uyarısı ayrı konudur |
+| PC etkileşimi | Rıhtım seçimi, bağımsız it/dur ve yanal sürat gözlendi | Native mobil cihaz testi yerine geçmez |
+
+Kontrollü fizik deneylerinde tam ileri hedefleri RÜZGAR 41 / BARBAROS 32 / KUMKALE 25 / ANADOLU 21 kn oldu. KUMKALE tam dümen taktik çapı yaklaşık 215 m; sert borda denizinde RÜZGAR/KUMKALE tepe yalpası yaklaşık 34,7°/33,1° ölçüldü. Bunlar gerçek gemi seyir/stabilite kartı değildir. Dalga karşılaştırmasının sabit baş/konum test koşulları [hareket belgesinde](SURAT_DONUS_YALPA.md) açıklanır.
+
+Römorkör deneyleri: iki eşit komutla 30 saniyede ±6,115 m yana hareket ve yaklaşık sıfır baş değişimi; yalnız baş/kıçla ±14,510° baş değişimi. İleri yol ve rıhtımdan uzak yaklaşma deneylerinde yaklaşık 6,102 m yanal hareket doğrulandı.
+
+Model kontrollerinde küçük gemiler için 18 ve römorkör için üç açı render'ı üretildi. [Küçük gemiler](images/smallcraft/) ve [römorkörler](images/tugs/) kalıcı örnekleri içerir. Batch modunda küçük gemi HUD görüntüsü alınamaması ve gerçek telefon testinin yapılmaması önceki test sınırları olarak geçerlidir; sonraki ANADOLU römorkör paneli PC'de ayrıca kontrol edildi.
+
+### Önceki sürümlerin korunan test kayıtları
+
+Aşağıdakiler eski geliştirme döngülerinin sonuçlarıdır; yeni bütünleşik sürümün yeniden eksiksiz test edildiği anlamına gelmez.
 
 | Alan | Kayıtlı doğrulama | Sınır |
 | --- | --- | --- |
@@ -376,13 +548,13 @@ Kaynaklar: [Copernicus DEM](https://dataspace.copernicus.eu/explore-data/data-co
 
 ### Büyük dünya ve ölçek önerisi
 
-- Mevcut `BarbarosModelBuilder` açıklaması yaklaşık **1 model birimi = 4 m** kabul eder. `ShipController.SpeedKnots`, birim/sn değerini doğrudan `1.94384` ile çarparak metre/sn gibi işler. Bu tutarsızlık gerçek mesafe/sürat eşleşmesinden önce düzeltilmeli; mevcut gösterge gerçek gemi sürati olarak kabul edilmemelidir.
-- Öneri: **1 Unity birimi = 1 metre** standardına kontrollü geçiş. Model, kamera, itki/direnç, fizik ofsetleri ve efektlerin birlikte yeniden kalibrasyonu gerekir; yalnızca Transform ölçeğini değiştirmek yetmez. Bu henüz uygulanmadı.
+- **Güncel durum:** proje 1 Unity birimi = 4 m ölçeğini kullanır. 22 Ekim hareket güncellemesinde knot hesabındaki eksik ölçek çarpanı düzeltildi; eski birim/sn → metre/sn tutarsızlığı artık bekleyen iş değildir. Bunun düzeltilmesi gerçek gemi hidrodinamik doğrulaması anlamına gelmez.
+- Önceki araştırmada 1 Unity birimi = 1 metreye geçiş bir alternatif olarak önerilmişti. **Onaylanmış/uygulanmış karar değildir; mevcut standart 4 m/birimdir.** Gelecekte değiştirilirse model, coğrafya, kamera, kuvvetler ve efektler birlikte yeniden kalibre edilmelidir.
 - Başlangıç önerisi: yaklaşık **2×2 km** arazi parçaları; yakında ayrıntılı, uzakta sade arazi/tepe silüeti. Boyut ve görünürlük mesafeleri gerçek mobil ölçümle kesinleşmeli.
 - Veriler önceden hazırlanıp yerelden yüklenmeli; ilk sürüm için sürekli internet veya canlı harita akışı zorunlu tutulmamalı.
 - Unity Terrain komşulukları ve asenkron/eklemeli sahne yükleme kullanılabilir. Addressables henüz projeye kurulmuş kabul edilmez.
 - Gerçek konumu yüksek hassasiyette ayrı saklama ve yerel dünyayı gemiye yakın tutan floating origin önerilir. Gemi, kamera, kıyı, dünya koordinatlı duman ve kıç suyu birlikte ele alınmalıdır.
-- Mevcut deniz `300×360` model birimi, kamera uzak kesme düzlemi `420` birimdir; bu küçük liman düzenini yalnızca büyütmek bütün boğazı çözmez. Görünür su, uzak kıyılar, yükleme ve LOD ayrı tasarlanmalıdır.
+- Liman deniz yaması `300×360` model birimi, liman kamerası uzak kesme düzlemi `420` birimdir; boğaz ayrı çevre/kamera mesafesi kullanır. Küçük liman düzenini yalnızca büyütmek bütün boğazı çözmez. Görünür su, uzak kıyılar, yükleme ve LOD ayrı tasarlanmalıdır.
 
 Teknik kaynaklar: [Unity komşu arazi parçaları](https://docs.unity3d.com/6000.0/Documentation/Manual/terrain-CreateNeighborTerrains.html), [Addressables sahne yükleme](https://docs.unity3d.com/Packages/com.unity.addressables@2.7/manual/LoadingScenes.html).
 
@@ -409,29 +581,34 @@ Kabul: kesintisiz tam geçiş; gemi seviyesinden doğru kıyı/tepe silüeti; tu
 
 ## Sürüm geçmişi ve gönderim durumu
 
-19 Ekim 2026 yerel denetiminde `origin` adresi `https://github.com/malibu61/meridian.git` olarak okundu. Yerel `HEAD` ve son bilinen `origin/main`, `376beb7605ce68943044fbcfe2797bb222367981` değerindeydi. Bu denetimde fetch/ls-remote yapılmadı; uzak sunucunun anlık durumuna ilişkin yeni doğrulama iddiası yoktur.
+Uzak depo: [malibu61/meridian](https://github.com/malibu61/meridian), dal: **main**.
 
 | Tarih | Commit | Kapsam |
 | --- | --- | --- |
 | 18 Ekim 2026 | `dbfecce` | İlk Meridian MVP-0 gemi manevra prototipi |
-| 18 Ekim 2026 | `e9ba14f` | TCG BARBAROS görsel MVP ve çevre iyileştirmesi |
-| 19 Ekim 2026 | `376beb7` | Dış model ayrıntıları, helikopter/personel animasyonları ve kamera zoom |
-| 19 Ekim 2026, yerel | Henüz commit yok | Makine yüküne bağlı baca dumanı, ilgili test araçları/belge ve ana belge güncellemesi |
-| 19 Ekim 2026, sonraki gönderim | `45677bb` | Bir önceki satırdaki duman ve belge çalışması commit/push edildi; uzak `main` ile doğrulandı |
-| 19 Ekim 2026, son yerel çalışma | Henüz commit yok | Mod seçimi menüsü, ayrı Boğaz Geçişi taslağı, sıralı rota ve testler |
+| 18 Ekim 2026 | `e9ba14f` | BARBAROS görsel MVP ve çevre iyileştirmesi |
+| 19 Ekim 2026 | `376beb7` | Dış model, helikopter/personel ve kamera zoom |
+| 19 Ekim 2026 | `45677bb` | Makine yüküne bağlı baca dumanı ve belgeler |
+| 22 Ekim 2026 | `2ecae49` | Filo/modlar, dört makine, deniz/fizik/yalpa, ANADOLU römorkörleri, test kanıtları ve README |
 
-İlk belge güncellemesinde yerel olan duman farkları `45677bb` içinde gönderilmiştir. En son menü/mod geliştirmesi yereldedir; bu özellik isteğinde ayrıca commit/push istenmediği için yeni gönderim yapılmadı.
+Son gönderilmiş tam SHA: `2ecae49f5bd2c728a3beb28451713cebf2ca0eca`. Önceki push işlemi sonrasında `git ls-remote` ile uzak main eşleşmesi ve temiz çalışma ağacı doğrulandı.
+
+**2ecae49 sonrasında ana belge, KUMKALE görevleri ve ses sistemi yerel olarak geliştirildi. Bu son görev/ses çalışması için yeni commit/push yapılmadı.** Eski bölümlerdeki “yerel” ifadeleri o geliştirme anını anlatır; yukarıdaki gönderilmiş kapsam esas alınmalıdır.
 
 ## Bilinen sınırlar ve yayın öncesi eksikler
 
-- Gerçek gemi manevra verileriyle doğrulama ve metre/knot ölçek tutarlılığı tamamlanmadı.
-- Su dalgaları ve geminin yalpası görseldir; tam kaldırma kuvveti/denizde altı serbestlik dereceli fizik yoktur.
-- Yanaşma hedefi, görev başarı/başarısızlık ve hasar/çarpışma geri bildirimi tamamlanmadı; limanın görünmesi tam yanaşma görevi anlamına gelmez.
-- Üniforma ve gemi dış modeli stilizedir. Yakın plan foto-gerçekçilik, UV/PBR üretimi ve ölçülü nihai Blender modeli yoktur.
-- Park helikopteri uçmaz; personel/halatlar görsel animasyondur, operasyon prosedürü simülasyonu değildir.
-- Gerçek mobil cihaz testi, Android yayın paketi doğrulaması, CPU/GPU/bellek profili ve mağaza yayını tamamlanmadı. Sentetik pinch testleri bunların yerine geçmez.
-- Ses, ayarlar, kalıcı kayıt, tam eğitim, trafik/yapay zekâ, çok oyunculu ve savaş sistemleri uygulanmış sayılmaz. Açılış/mod seçimi menüsü artık mevcuttur; liman hâlâ serbest manevradır.
-- Çanakkale kıyı/DEM/batimetri verisi doğrulaması, hassas coğrafi koordinat altyapısı, akıntı ve büyük dünya yükleme henüz yoktur. Güncel Boğaz Geçişi, yaklaşık merkez hattına göre üretilen kıyılarla oynanabilir bir taslaktır.
+1. **Su-gövde/güverte kesişmesi:** deniz yüzeyi gövdeye göre dışlanmıyor; gerçek güverteyi basan suyun akışı/tahliyesi hesaplanmıyor. Gemi ve personel dalganın altında görünebiliyor. Gerçek dalga aşması mümkün olsa da her kesişme “gerçekçi” kabul edilmedi; çözüm henüz uygulanmadı.
+2. **ANADOLU geometri kontrolü:** mevcut `VesselSelectionReview`, gövde kapaklarında kenar yönü tutarsızlığı raporluyor. Römorkör/yeni küçük gemi kontrolleri geçse de bütün proje testleri yeşil değildir.
+3. **Play sırasında yeniden derleme:** gemi tanımı ile görselin farklı kalması riski/gözlemi var. Kaynak yeniden derlendikten sonra şüpheli durumda Play durdurulup yeni sefer başlatılmalı; kalıcı yaşam döngüsü düzeltmesi doğrulanmadı.
+4. **İndirgenmiş fizik:** metre/knot ölçeği düzeltildi ve Rigidbody tepkileri mevcut; gerçek GM/GZ/RAO, deplasman, tam akışkan veya ölçülmüş gemi manevra modeli değildir. Dalga 1–5 seviyesi standart Beaufort/WMO ölçeği değildir.
+5. **Görev sistemi:** KUMKALE için beş görev ve kariyerin ilk sürümü var; diğer gemilerin görevleri, kapsamlı dengeleme ve cihaz doğrulaması yok. Anlık sefer konumu/bulut kayıt edilmez.
+6. **Römorkör sınırı:** kuvvet oyunda fizikseldir; römorkörün kendi seyri kinematiktir. Halatla çekme, gerçek bollard-pull kalibrasyonu ve genel engelden kaçınma yoktur.
+7. **Gerçek cihaz:** iPhone 16 Pro / Unity Remote 5 denemesi, bağımsız telefonda çalışan uygulama testi değildir. Native iOS/Android, Metal, çoklu dokunma, FPS/kare zamanı, ısınma ve bellek profili doğrulanmadı.
+8. **Görsel üretim:** modeller/üniformalar stilize ve prosedüreldir. Yakın plan foto-gerçekçilik, ölçülü Blender modeli, UV/PBR ve bütün açılarda nihai kalite tamamlanmadı.
+9. **Personel/helikopter:** sahil/güverte personeli prosedürel animasyon, kıyı baş/kıç halatları basitleştirilmiş yay fiziğidir; gerçek personel emniyeti, halat mukavemeti/snap-back simüle edilmez. Helikopter park modelidir; uçuş/kalkış/iniş yoktur.
+10. **Coğrafya:** Çanakkale taslak; OSM/DEM/batimetri doğrulaması, akıntı, büyük dünya koordinat/yükleme altyapısı ve trafik tamamlanmadı.
+11. **Ürünleşme:** telsiz/düdük/deniz sesi, ses ayarı ve yerel kariyer kaydı var; kapsamlı ayarlar, sefer kaydı, tam eğitim, hasar, yapay zekâ, çok oyunculu ve savaş sistemleri tamamlanmadı. Şamandıra bağlama henüz oynanabilir değildir.
+12. **Yayın:** cihaz kalite bütçeleri, uzun oturum regresyonu, yayın kabul kriterleri ve mağaza paketleri tamamlanmadı.
 
 ## Ayrıntılı belge dizini
 
@@ -439,7 +616,14 @@ Kabul: kesintisiz tam geçiş; gemi seviyesinden doğru kıyı/tepe silüeti; tu
 - [Güverte yaşamı](GUVERTE_YASAMI.md): S-70B, kıyafet referansları, 26 personel ve canlı animasyon testleri.
 - [Kamera zoom](KAMERA_ZOOM.md): fare/klavye/mobil girdi davranışı ve 23 kontrol.
 - [Baca dumanı](BACA_DUMANI.md): yük tepkisi, 17 kontrol, dört görsel durum ve yerel gönderim sınırı.
-- [README](../README.md): projeyi açma, kontroller ve kısa özellik özeti.
+- [README](../README.md): projeyi açma, kontroller ve güncel genel özet.
+- [RÜZGAR ve KUMKALE](RUZGAR_VE_KUMKALE.md): model referansları, dört makine ve küçük gemiler.
+- [Sürat, dönüş ve yalpa](SURAT_DONUS_YALPA.md): ölçek düzeltmesi, fizik modeli ve ölçümler.
+- [ANADOLU römorkörleri](ANADOLU_ROMORKOR.md): araştırma, hedef/komut, itme düzeltmesi ve testler.
+- [Kumanda ve arayüz](KUMANDA_VE_ARAYUZ.md), [analog kadran](YALPA_KADRANI.md).
+- [Deniz/köpük](DENIZ_VE_KOPUK.md), [dalga seçimi](DALGA_SECIMI_VE_GEMI_FIZIGI.md), [borda çarpması](DALGA_CARPMA_VE_DUZELTMELER.md).
+- [Görevler ve sesler](GOREVLER_VE_SESLER.md): beş KUMKALE görevi, kariyer, telsiz/düdük ve kaynaklar.
+- [Kalıcı test kayıtları](testing/): küçük gemi/fizik, römorkör ve görev/ses sonuçları.
 - [Modlar ve Boğaz Geçişi](MODLAR_VE_BOGAZ_GECISI.md): uygulanan menü, mod yaşam döngüsü, taslak coğrafya ve yeni testler.
 
 ---

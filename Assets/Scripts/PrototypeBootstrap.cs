@@ -80,6 +80,13 @@ namespace Meridian
             if (mode == SimulationMode.StraitPassage) followCamera.SetTransitView();
         }
 
+        public void BuildMissionEnvironment(DockingMissionRun run)
+        {
+            GameObject environment=new("Kumkale mission environment");
+            environment.transform.SetParent(worldRoot,false);
+            environment.AddComponent<HarborMissionEnvironment>().Build(run);
+        }
+
         private void BuildMaterials()
         {
             seaMaterial = WaterVisuals.Ocean(persistentResources);
@@ -157,6 +164,8 @@ namespace Meridian
             BuildHarborBuildings();
             BuildNavigationMarkers();
             BuildDistantTown();
+            GameObject shorePeople=new("Naval harbour shore personnel");shorePeople.transform.SetParent(worldRoot,false);
+            shorePeople.AddComponent<HarborShoreLife>().Build();
         }
 
         private void BuildCoastline()

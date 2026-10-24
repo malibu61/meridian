@@ -55,7 +55,7 @@ namespace Meridian.Editor
                 }
                 Check(HelmPointerRouter.Hit(layout,HelmLayout.Rail(layout.Master).center)==2,"master hit");
                 Check(HelmPointerRouter.Hit(layout,new Vector2(layout.Port.center.x,layout.Port.y+25))==-1,"title does not accelerate");
-                Check(!layout.RollInstrument.Overlaps(layout.Header)&&!layout.RollInstrument.Overlaps(layout.Status)&&!layout.RollInstrument.Overlaps(layout.RouteMap),"instrument clear of top telemetry "+size);
+                Check(layout.Header.Contains(layout.RollInstrument.min)&&layout.Header.Contains(layout.RollInstrument.max)&&!layout.RollInstrument.Overlaps(layout.Status)&&!layout.RollInstrument.Overlaps(layout.RouteMap),"analogue instrument contained in header "+size);
                 Check(HelmPointerRouter.Hit(layout,layout.RollInstrument.center)==-1,"instrument is not an engine control "+size);
             }
             HelmPointerRouter router=new();

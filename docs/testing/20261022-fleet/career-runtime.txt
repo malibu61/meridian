@@ -1,0 +1,1 @@
+MISSION_CAREER_RUNTIME_PASS checks=85 radio_clips=18 mission_cycles=5 memory_storage_only

@@ -1,0 +1,1 @@
+MOORING_RUNTIME_PASS checks=108 ships=4 berths=2 physical_cycles=8 shore_patrols=16

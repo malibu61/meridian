@@ -7,17 +7,21 @@ namespace Meridian
     public static class TugAssistRules
     {
         public const float TugLength=7.5f, TugBeam=2.45f, ContactTolerance=.4f, MaximumAssistKnots=5f;
-        public static bool Available(SimulationMode mode,VesselId vessel)=>mode==SimulationMode.Harbor&&vessel==VesselId.Anadolu;
+        public static bool Available(SimulationMode mode,VesselId vessel)=>mode==SimulationMode.Harbor&&(vessel==VesselId.Anadolu||vessel==VesselId.Barbaros);
         public static bool Valid(HarborBerth berth)=>berth==HarborBerth.East||berth==HarborBerth.West;
         public static Vector3 Destination(HarborBerth berth)=>berth==HarborBerth.East?new Vector3(28.1f,.1f,70):new Vector3(-26.1f,.1f,54);
+        public static Vector3 Destination(HarborBerth berth,VesselDefinition vessel)=>MooringRules.Destination(vessel,berth);
         public static string Name(HarborBerth berth)=>berth==HarborBerth.East?"DOĞU RIHTIMI":"BATI RIHTIMI";
         public static Vector3 ShoreDirection(HarborBerth berth)=>berth==HarborBerth.East?Vector3.right:Vector3.left;
         public static int PushSign(Vector3 shipRight,HarborBerth berth)=>Vector3.Dot(shipRight,ShoreDirection(berth))>=0?1:-1;
         public static float SpeedFactor(float knots)=>Mathf.Clamp01((MaximumAssistKnots-knots)/3f);
         public static float StationZ(int tug)=>tug==0?16f:-16f;
         public static Vector3 LocalStation(int tug,int pushSign)
+            =>LocalStation(tug,pushSign,VesselCatalog.Get(VesselId.Anadolu));
+        public static Vector3 LocalStation(int tug,int pushSign,VesselDefinition vessel)
         {
-            float z=StationZ(tug),halfBeam=AnadoluModelBuilder.WaterlineHalfWidth(z)*1.025f;
+            float z=vessel.UsesPods?StationZ(tug):(tug==0?1:-1)*vessel.LengthMetres/8*.55f;
+            float halfBeam=vessel.UsesPods?AnadoluModelBuilder.WaterlineHalfWidth(z)*1.025f:BarbarosModelBuilder.HalfWidth(z)*.92f;
             return new Vector3(-pushSign*(halfBeam+TugLength*.5f+.12f),0,z);
         }
         // Assistance is available throughout the harbour approach, not just within 48 m of the final berth.

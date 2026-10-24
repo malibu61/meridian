@@ -13,8 +13,15 @@ namespace Meridian
         public Rect HeaderMetric(int index)
         {Rect r=Header;float width=(r.width-410)/HeaderMetricCount;return new Rect(r.x+390+index*width,r.y,width,r.height);}
         public Rect Status=>new(24,110,Width-48,36);
-        public Rect RollInstrument=>new(24,152,278,124);
-        public Rect RouteMap=>new(Width-182,158,158,104);
+        public Rect RollInstrument{get{Rect cell=HeaderMetric(3);return new Rect(cell.x-6,Header.y+4,cell.width-16,Header.height-8);}}
+        public Rect RouteMap=>new(24,158,158,104);
+        public const int SignalColumns=3,SignalRows=2;
+        public const float SignalGap=6,SignalPadding=6;
+        public float SignalSide=>Mathf.Clamp((Height-612)*.5f,54,72);
+        public Rect Signals=>new(Width-24-(SignalSide*3+24),152,SignalSide*3+24,SignalSide*2+18);
+        public Rect SignalButton(int index)
+        {if(index<0||index>=SignalColumns*SignalRows)throw new System.ArgumentOutOfRangeException(nameof(index));Rect r=Signals;return new Rect(r.x+SignalPadding+(index%SignalColumns)*(SignalSide+SignalGap),r.y+SignalPadding+(index/SignalColumns)*(SignalSide+SignalGap),SignalSide,SignalSide);}
+        public Rect SoundSettings=>new(Signals.x-314,Signals.y,304,124);
         public Rect Port=>new(24,Height-438,142,414);
         public Rect Starboard=>new(Width-166,Height-438,142,414);
         public Rect PortInner=>FourEngines?new Rect(178,Height-398,112,374):default;
@@ -34,6 +41,6 @@ namespace Meridian
         public Vector2 FromScreen(Vector2 point)=>(new Vector2(point.x,Screen.height-point.y)-Offset)/Scale;
         public Vector2 FromGui(Vector2 point)=>(point-Offset)/Scale;
         public Rect Physical(Rect rect)=>new(Offset.x+rect.x*Scale,Offset.y+rect.y*Scale,rect.width*Scale,rect.height*Scale);
-        public bool BlocksCamera(Vector2 point)=>Header.Contains(point)||Status.Contains(point)||RollInstrument.Contains(point)||RouteMap.Contains(point)||Port.Contains(point)||Starboard.Contains(point)||Master.Contains(point)||Rudder.Contains(point)||(FourEngines&&(PortInner.Contains(point)||StarboardInner.Contains(point)));
+        public bool BlocksCamera(Vector2 point)=>Header.Contains(point)||Status.Contains(point)||Signals.Contains(point)||Port.Contains(point)||Starboard.Contains(point)||Master.Contains(point)||Rudder.Contains(point)||(FourEngines&&(PortInner.Contains(point)||StarboardInner.Contains(point)));
     }
 }

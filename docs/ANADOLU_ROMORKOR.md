@@ -2,13 +2,13 @@
 
 ## Kapsam ve kullanım
 
-- Yalnız **TCG ANADOLU + Gemi Yanaştırma**. Boğaz geçişinde ve diğer üç gemide römorkör/komut paneli oluşturulmaz.
+- İlk ANADOLU desteği sonradan **BARBAROS + Gemi Yanaştırma** için de genişletildi. İki büyük geminin görevleri için [Filo görevleri](FILO_GOREVLERI.md) güncel kapsamdır. Boğaz geçişinde ve küçük gemilerde römorkör oluşturulmaz.
 - Manevra başında liman kontrol penceresi hedefi sorar. Doğu rıhtımı: sancak aborda; batı rıhtımı: iskele aborda. Mevcut örnek limanın gerçek iki rıhtımı kullanılır; coğrafi gerçek bir üs iddiası yoktur.
 - Turkuaz çerçeve geminin hedef konumunu gösterir. Rıhtıma paralel (baş 000° ±30°) ilerlenir. Römorkörler liman yaklaşma sahasında (oyun z: −75…110) da kullanılabilir; son rıhtımın yakınında olma şartı yoktur. Geminin ileri/tornistan makineleri hâlâ oyuncudadır; römorkörler seyir otopilotu değildir.
 - Baş/kıç römorkörünün üzerindeki **İT** işareti veya üstteki iki komut kartı tıklanır/dokunulur. Komut, yaklaşma → temas → kademeli itme şeklinde işler. Tekrar tıklamak bırakır; **İKİSİ DUR** iki komutu da keser.
 - Oklar **yalnız gerçekten kuvvet uygulanırken** itme yönünü gösterir. Sancağa yanaşırken iskeledeki, iskeleye yanaşırken sancaktaki römorkörler iter. Baş ve kıç ayrı kuvvet noktalarıdır; tek römorkör yaw momenti de oluşturur. Panelde gerçek uygulanan itme yüzdesi ile **YAN ←/→ … kn** yanal sürat gösterilir; temasta olup bir sınır nedeniyle itemiyorsa “TEMASTA · BEKLİYOR” yazar.
-- İtme 5 kn ve üstünde kesilir; 2–5 kn arasında azaltılır. Temas yokken, menü/hedef penceresi açıkken, baş uygunsuzken veya manevra alanının dışındayken kuvvet uygulanmaz. Yakın hedefte itme azaltılır; konum/sürat/baş birlikte uygunsa “YANAŞMA TAMAMLANDI” gösterilir ve komutlar bırakılır.
-- **HEDEF** düğmesi rıhtımı yeniden seçtirir. Yeni sefer/mod/gemi seçimi eski filo ve çizgiyi devre dışı bırakıp kaynakları temizler.
+- İtme 5 kn ve üstünde kesilir; 2–5 kn arasında azaltılır. Temas yokken, menü/hedef penceresi açıkken, baş uygunsuzken veya manevra alanının dışındayken kuvvet uygulanmaz. Yakın hedefte itme azaltılır; güncel tamamlanma ayrıca iki baş/kıç halatının bağlanmasına dayanır.
+- Serbest seyirde **HEDEF** düğmesi rıhtımı yeniden seçtirir; görevde atanmış rıhtım değiştirilemez. Yeni sefer/mod/gemi seçimi eski filo ve çizgiyi devre dışı bırakıp kaynakları temizler.
 
 ## Görsel araştırma
 
@@ -23,9 +23,23 @@ Ortaya çıkan iki model **özgün, bu referanslardan esinlenen liman destek rö
 
 ANADOLU'nun hareketi Rigidbody.AddForceAtPosition ile oluşur: transform ile gemi kaydırılmaz, tıklama anında uzaktan kuvvet verilmez. Kuvvetler mevcut indirgenmiş düzlemsel gemi fiziğiyle aynı ağırlık merkezi yüksekliğinde uygulanır; baş/kıç kolları gerçek dönme momenti üretir. İki eşit simetrik kuvvet yaklaşık saf yanal harekete katkı verir.
 
-Römorkörlerin kendi intikali sınırlı hızlı kinematik bir yaklaşma modelidir. Bağımsız tam sevk/çarpışma ve hidrodinamik simülasyon değildir; su üstü konumları ortak dalga alanını izler. Borda değişiminde baş/kıç etrafından dolaşırlar; ancak kalabalık limanlarda genel engelden kaçınma/yol bulma yoktur. Halatla çekme, halat esnekliği/kopması ve sertifikalı bollard-pull katsayıları kapsam dışıdır. İtme katsayısı **oyun ayarıdır**, gerçek ÖNDER çeki kuvveti değildir. Rıhtıma yerleşme yardımının gerçek seyir eğitimi/emniyet sistemi olduğu iddia edilmez.
+Römorkör intikali artık geminin ileri, yanal ve dönmeden kaynaklanan istasyon hızını izleyen kinematik refakattir; gemiye parent edilmez ve yetişmek için teleport edilmez. İtme yokken paralel refakat eder; uygun sürat/baş ve İT komutunda açıkta dönüp baş usturmaçasıyla temasa girer. **5 kn sınırı refakate değil, kuvvet uygulamaya aittir.**
+
+Örnek limana özel sınırlı görünürlük-grafı yol bulma; kıyıları, iki rıhtımın görünür kapaklarını, arka duvarı, görevdeki bağlı eğitim gemilerini, ana geminin etrafını ve diğer römorkörü dikkate alır. Gövde/usturmaçayı her yaw açısında içine alan muhafazakâr dairesel iz, yer değiştirme boyunca ve dönüşte korunur. Temas yaklaşmasında ayrı su hattı gövde kontrolü çalışır. Borda değişimi baş veya kıç çevresinden yapılır; düz çizgide ana geminin içinden geçilmez.
+
+Rıhtım tarafı daralması, geminin hızıyla 12 oyun saniyesi ileri bakılarak değerlendirilir. Arada kalacak römorkör itişi bırakıp açık-su bordasına intikal eder; uygun rota yoksa panelde **GÜVENLİ YOL BEKLİYOR** yazar, kuvvet vermez ve duvardan geçerek yetişmeye çalışmaz. Bu kestirim/katsayılar oyun ayarıdır; gerçek seyir emniyet planı değildir. Oyuncu gemiyi kasıtlı olarak hızlıca bir römorköre/engelle kapalı bölgeye sürerse bütün sıkışmaların fiziksel olarak çözüleceği garanti edilmez.
+
+Bağımsız tam römorkör sevk/hidrodinamik ve çarpışma kuvvetleri simüle edilmez. Genel liman/başka harita/serbest hareketli gemi trafiği için evrensel çarpışma önleyici değildir. Halatla çekme, halat esnekliği/kopması ve sertifikalı bollard-pull katsayıları kapsam dışıdır. İtme katsayısı **oyun ayarıdır**, gerçek ÖNDER çeki kuvveti değildir. Rıhtıma yerleşme yardımının gerçek seyir eğitimi/emniyet sistemi olduğu iddia edilmez.
 
 ## Doğrulama
+
+### Refakat ve rıhtımdan çekilme regresyonu
+
+`Meridian.Editor.TugNavigationReview.RunBatch`: 25 yol/geometri kontrolü; 185.342 örnek bazlı runtime kontrolü geçti. ANADOLU/BARBAROS × ileri/yanal = dört refakat, iki gemi × iki rıhtım = dört otomatik çekilme ve önceki altı bağımsız gerçek Rigidbody kuvvet deneyi çalıştı. 16,5 kn ileri refakat boyunca itme kuvveti sıfır kaldı. İki gemide iki rıhtıma bilerek yanlış bordadan yanal yaklaşma sırasında römorkörler açık-su bordasına geçti; her örnekte görünür rıhtım, süpürülmüş hareket ve ana geminin su hattı kontrol edildi.
+
+Yeni deneyde 30 sn iki römorkörle yaklaşık ±5,985 m yanal yer değiştirme; yalnız baş/kıç yaklaşık ±14,029° baş değişimi görüldü. Bunlar kontrollü oyun deneyi değerleridir; gerçek gemi performansı değildir. Refakat/çekilme testinde ana gemi yolu bilerek belirlenir; bütün görevlerin başlangıçtan sona elle oynandığı veya telefonda performans doğrulandığı anlamına gelmez.
+
+Kanıt: `docs/testing/20261022-tug-navigation/`. Aşağıdaki ilk sürüm test sayıları tarihsel kayıt olarak korunur; yeni sonuçla karıştırılmamalıdır.
 
 `Meridian/Tugs - Check Rules and Hull`: mod/gemi kapsamı, hedef/itme yönü, sürat ve baş sınırı, kapalı-dışa bakan gövde geometrisi ve farklı yatay ekranlarda panel yerleşimi.
 

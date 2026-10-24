@@ -1,0 +1,4 @@
+Barbaros East: displacement_m=10,334 bow_s=3,0 stern_s=3,0 solo_s=3,0 delivered_peak=1,000 ready=True
+Barbaros West: displacement_m=11,146 bow_s=3,0 stern_s=3,0 solo_s=0,0 delivered_peak=1,000 ready=True
+Anadolu East: displacement_m=10,996 bow_s=3,0 stern_s=3,0 solo_s=0,0 delivered_peak=1,000 ready=True
+Anadolu West: displacement_m=10,996 bow_s=3,0 stern_s=3,0 solo_s=0,0 delivered_peak=1,000 ready=True

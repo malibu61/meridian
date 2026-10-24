@@ -1,0 +1,8 @@
+Barbaros East: second=True complete=True seconds=58,1 x=29,892 z=70,321 yaw=0,36 knots=0,197 displacement=5,32m peak_accel=0,02125
+Barbaros West: second=True complete=True seconds=58,1 x=-27,892 z=54,321 yaw=359,64 knots=0,197 displacement=5,32m peak_accel=0,02125
+Anadolu East: second=True complete=True seconds=58,9 x=27,738 z=70,234 yaw=0,19 knots=0,193 displacement=5,24m peak_accel=0,02200
+Anadolu West: second=True complete=True seconds=58,9 x=-25,738 z=54,234 yaw=359,81 knots=0,193 displacement=5,24m peak_accel=0,02200
+Ruzgar East: second=True complete=True seconds=57,3 x=30,817 z=70,494 yaw=1,03 knots=0,220 displacement=5,63m peak_accel=0,01652
+Ruzgar West: second=True complete=True seconds=57,3 x=-28,817 z=54,494 yaw=358,97 knots=0,220 displacement=5,63m peak_accel=0,01652
+Kumkale East: second=True complete=True seconds=57,2 x=30,661 z=70,540 yaw=1,06 knots=0,239 displacement=5,72m peak_accel=0,01799
+Kumkale West: second=True complete=True seconds=57,2 x=-28,661 z=54,540 yaw=358,94 knots=0,239 displacement=5,72m peak_accel=0,01799

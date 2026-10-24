@@ -40,6 +40,8 @@ namespace Meridian
         public void SetEngineThrottle(int index,float value){ValidateEngine(index);engineTargets[index]=ThrottleDetents.Snap(value);}
         private void ValidateEngine(int index){if(index<0||index>=EngineCount)throw new System.ArgumentOutOfRangeException(nameof(index));}
         public float Rudder => rudderTarget;
+        // Actual fore/aft motion, independent of engine command and transverse drift.
+        public float SignedSpeedKnots => Vector3.Dot(body.linearVelocity,ForwardOnWater)*VesselCatalog.ModelMetresPerUnit*1.9438445f;
         public float SpeedKnots
         {
             get
@@ -109,6 +111,17 @@ namespace Meridian
             foreach (ParticleSystem effect in GetComponentsInChildren<ParticleSystem>()) effect.Clear(true);
             foreach (EngineExhaustSmoke smoke in GetComponentsInChildren<EngineExhaustSmoke>()) smoke.ResetForMode();
             GetComponent<WakeTrail>()?.ResetForMode();
+            body.WakeUp();
+        }
+
+        public void StartUnderway(float aheadKnots)
+        {
+            if(!float.IsFinite(aheadKnots)||aheadKnots<0||aheadKnots>Definition.MaximumAheadKnots)
+                throw new System.ArgumentOutOfRangeException(nameof(aheadKnots));
+            float q=aheadKnots/Definition.MaximumAheadKnots;
+            float load=Mathf.Sqrt(.15f*q+.85f*q*q);
+            for(int i=0;i<EngineCount;i++){engineTargets[i]=ThrottleDetents.Snap(load);engineActuals[i]=load;}
+            body.linearVelocity=ForwardOnWater*(aheadKnots/(VesselCatalog.ModelMetresPerUnit*1.9438445f));
             body.WakeUp();
         }
 

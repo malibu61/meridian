@@ -1,0 +1,1 @@
+MOORING_RULES_PASS checks=66

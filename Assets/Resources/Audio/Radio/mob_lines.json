@@ -1,0 +1,8 @@
+[
+  {"id":"mob_brief","text":"Eğitim kontrol: Denize adam düştü tatbikatı. Alarm verin, konumu işaretleyin. Kazazedeyi görüşte tutun. Güvenli borda yaklaşması ve kurtarma için paneldeki adımları izleyin."},
+  {"id":"mob_alarm","text":"Denize adam düştü! Gözcü kazazedeyi takip ediyor. Kurtarma ekibi istasyona. Konumu işaretleyin."},
+  {"id":"mob_mark","text":"Kazazede konumu işaretlendi. Düşük süratle borda istasyonuna yaklaşın. Gövdeyi ve pervaneleri kazazededen uzak tutun."},
+  {"id":"mob_recover","text":"Kurtarma ekibi alıyor. Bütün makineler stop. Sürati ve gemi hareketini kontrol altında tutun."},
+  {"id":"mob_success","text":"Kazazede emniyetle güverteye alındı. Sağlık ekibine teslim ediliyor. Denize adam düştü oyun eğitimi tamamlandı."},
+  {"id":"mob_failure","text":"Eğitim durduruldu. Güvenli yaklaşma koşulları sağlanamadı. Değerlendirmeyi okuyup tekrar deneyin."}
+]

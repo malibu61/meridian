@@ -1,0 +1,32 @@
+escort Anadolu lateral=False ship_delta=(1.20, 0.00, 63.62) bow_delta=(5.20, 0.06, 63.66) stern_delta=(5.20, -0.03, 63.66)
+escort Anadolu lateral=True ship_delta=(-3.90, 0.00, 0.00) bow_delta=(0.10, -0.10, 0.00) stern_delta=(0.10, -0.02, 0.00)
+escort Barbaros lateral=False ship_delta=(1.20, 0.00, 63.62) bow_delta=(5.20, -0.03, 63.66) stern_delta=(5.20, -0.02, 63.66)
+escort Barbaros lateral=True ship_delta=(-3.90, 0.00, 0.00) bow_delta=(0.10, 0.03, 0.00) stern_delta=(0.10, -0.06, 0.00)
+withdraw live Anadolu west=True n=0 ship=(0.00, 0.10, 54.00) bow=(-13.40, 0.16, 70.00) stern=(-13.65, 0.08, 38.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=True n=1000 ship=(-3.60, 0.10, 54.00) bow=(-11.04, 0.07, 70.00) stern=(-11.29, 0.15, 38.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=True n=2000 ship=(-7.20, 0.10, 54.00) bow=(-14.64, 0.11, 70.00) stern=(-14.89, 0.06, 38.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=True n=3000 ship=(-10.80, 0.10, 54.00) bow=(-18.24, 0.12, 70.00) stern=(-18.49, 0.14, 38.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=True n=4000 ship=(-14.40, 0.10, 54.00) bow=(-21.84, 0.09, 70.00) stern=(-22.46, 0.04, 38.00) escape=False/True waiting=False/False
+withdraw live Anadolu west=True n=5000 ship=(-18.00, 0.10, 54.00) bow=(-14.65, 0.07, 87.22) stern=(-10.99, 0.14, 20.76) escape=True/True waiting=False/False
+withdraw Anadolu west=True ship=(-21.60, 0.10, 54.00) bow=(-12.16, 0.03, 70.00) stern=(-11.91, 0.11, 38.00)
+withdraw live Anadolu west=False n=0 ship=(0.00, 0.10, 70.00) bow=(13.40, 0.08, 86.00) stern=(13.65, 0.05, 54.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=False n=1000 ship=(3.60, 0.10, 70.00) bow=(11.04, 0.17, 86.00) stern=(11.29, 0.09, 54.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=False n=2000 ship=(7.20, 0.10, 70.00) bow=(14.64, 0.07, 86.00) stern=(14.89, 0.13, 54.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=False n=3000 ship=(10.80, 0.10, 70.00) bow=(18.24, 0.12, 86.00) stern=(18.49, 0.08, 54.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=False n=4000 ship=(14.40, 0.10, 70.00) bow=(21.84, 0.08, 86.00) stern=(22.09, 0.17, 54.00) escape=False/False waiting=False/False
+withdraw live Anadolu west=False n=5000 ship=(18.00, 0.10, 70.00) bow=(26.45, 0.17, 96.82) stern=(26.46, 0.16, 40.80) escape=True/True waiting=False/False
+withdraw Anadolu west=False ship=(21.60, 0.10, 70.00) bow=(12.43, 0.10, 90.60) stern=(12.00, 0.13, 52.74)
+withdraw live Barbaros west=True n=0 ship=(0.00, 0.10, 54.00) bow=(-11.37, 0.06, 62.11) stern=(-11.50, 0.15, 45.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=True n=1000 ship=(-3.60, 0.10, 54.00) bow=(-9.01, 0.15, 62.11) stern=(-9.14, 0.03, 45.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=True n=2000 ship=(-7.20, 0.10, 54.00) bow=(-12.61, 0.04, 62.11) stern=(-12.74, 0.11, 45.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=True n=3000 ship=(-10.80, 0.10, 54.00) bow=(-16.21, 0.12, 62.11) stern=(-16.34, 0.08, 45.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=True n=4000 ship=(-14.40, 0.10, 54.00) bow=(-19.81, 0.05, 62.11) stern=(-19.94, 0.09, 45.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=True n=5000 ship=(-18.00, 0.10, 54.00) bow=(-24.31, 0.15, 72.26) stern=(-24.31, 0.10, 35.27) escape=True/True waiting=False/False
+withdraw Barbaros west=True ship=(-21.60, 0.10, 54.00) bow=(-14.19, 0.13, 62.11) stern=(-14.06, 0.05, 45.89)
+withdraw live Barbaros west=False n=0 ship=(0.00, 0.10, 70.00) bow=(11.37, 0.09, 78.11) stern=(11.50, 0.09, 61.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=False n=1000 ship=(3.60, 0.10, 70.00) bow=(9.01, 0.08, 78.11) stern=(9.14, 0.17, 61.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=False n=2000 ship=(7.20, 0.10, 70.00) bow=(12.61, 0.13, 78.11) stern=(12.74, 0.05, 61.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=False n=3000 ship=(10.80, 0.10, 70.00) bow=(16.21, 0.04, 78.11) stern=(16.34, 0.12, 61.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=False n=4000 ship=(14.40, 0.10, 70.00) bow=(19.81, 0.15, 78.11) stern=(19.94, 0.05, 61.89) escape=False/False waiting=False/False
+withdraw live Barbaros west=False n=5000 ship=(18.00, 0.10, 70.00) bow=(23.41, 0.07, 78.11) stern=(23.54, 0.09, 61.89) escape=False/False waiting=False/False
+withdraw Barbaros west=False ship=(21.60, 0.10, 70.00) bow=(15.26, 0.12, 88.75) stern=(15.07, 0.13, 53.04)

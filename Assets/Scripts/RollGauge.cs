@@ -9,6 +9,31 @@ namespace Meridian
         public static float NeedleAngle(float roll)=>float.IsFinite(roll)?Mathf.Clamp(roll,-ScaleDegrees,ScaleDegrees)/ScaleDegrees*SweepDegrees:0;
         public static Vector2 Point(Vector2 pivot,float radius,float roll)
         {float a=NeedleAngle(roll)*Mathf.Deg2Rad;return pivot+new Vector2(-Mathf.Sin(a),Mathf.Cos(a))*radius;}
+        public static Vector2 CompactPivot(Rect r)=>new(r.center.x,r.y+20);
+        public const float CompactRadius=36;
+        /// <summary>Single analogue instrument in the header; no separate numeric roll tile.</summary>
+        public static void DrawCompact(MaritimeUiTheme ui,Rect r,float roll)
+        {
+            bool valid=float.IsFinite(roll),overflow=valid&&Mathf.Abs(roll)>ScaleDegrees;Color accent=overflow?Amber:Teal;
+            Vector2 pivot=CompactPivot(r);float radius=CompactRadius;
+            ui.Text(new Rect(r.x,r.y-1,r.width,13),overflow?"YALPA · ÖLÇEK DIŞI":"YALPA",10,overflow?Amber:Muted,TextAnchor.MiddleCenter,true);
+            Arc(pivot,radius,-ScaleDegrees,ScaleDegrees,1,new Color(.38f,.46f,.51f));
+            Line(pivot+Vector2.up*5,pivot+Vector2.up*(radius-3),.8f,new Color(.22f,.3f,.35f));
+            for(int degree=-40;degree<=40;degree+=5)
+            {
+                bool major=degree%20==0;Line(Point(pivot,radius-(major?6:3),degree),Point(pivot,radius,degree),major?1.4f:.8f,degree==0?Ink:Muted);
+                if(major){Vector2 p=Point(pivot,radius+10,degree);ui.Text(new Rect(p.x-10,p.y-5,20,10),Mathf.Abs(degree).ToString(),8,degree==0?Ink:Muted,TextAnchor.MiddleCenter,degree==0);}
+            }
+            if(valid)
+            {
+                Arc(pivot,radius+2,0,Mathf.Clamp(roll,-ScaleDegrees,ScaleDegrees),1.8f,accent);
+                Vector2 tip=Point(pivot,radius-4,roll),direction=(tip-pivot).normalized;
+                Line(pivot-direction*4,tip,2.4f,new Color(0,0,0,.65f));Line(pivot-direction*4,tip,1.5f,Amber);
+            }
+            Fill(new Rect(pivot.x-2,pivot.y-2,4,4),Ink);
+            ui.Text(new Rect(r.x+2,r.y+57,31,12),"İSKELE",8,valid&&roll>=.05f?Teal:Muted);
+            ui.Text(new Rect(r.xMax-36,r.y+57,34,12),"SANCAK",8,valid&&roll<=-.05f?Teal:Muted,TextAnchor.MiddleRight);
+        }
         public static void Draw(MaritimeUiTheme ui,Rect r,float roll)
         {
             bool valid=float.IsFinite(roll),overflow=valid&&Mathf.Abs(roll)>ScaleDegrees;

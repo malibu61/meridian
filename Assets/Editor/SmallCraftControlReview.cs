@@ -23,7 +23,7 @@ namespace Meridian.Editor
             foreach(bool four in new[]{false,true})
             {
                 Rect safe=new(48,12,size.x-96,size.y-24);HelmLayout layout=new(size.x,size.y,safe,four);
-                Rect[] panels=four?new[]{layout.Port,layout.Starboard,layout.PortInner,layout.StarboardInner,layout.Master,layout.Rudder,layout.RollInstrument,layout.RouteMap,layout.Header,layout.Status}:new[]{layout.Port,layout.Starboard,layout.Master,layout.Rudder,layout.RollInstrument,layout.RouteMap,layout.Header,layout.Status};
+                Rect[] panels=four?new[]{layout.Port,layout.Starboard,layout.PortInner,layout.StarboardInner,layout.Master,layout.Rudder,layout.Signals,layout.Header,layout.Status}:new[]{layout.Port,layout.Starboard,layout.Master,layout.Rudder,layout.Signals,layout.Header,layout.Status};
                 for(int i=0;i<panels.Length;i++)
                 {
                     Rect p=layout.Physical(panels[i]);

@@ -1,0 +1,8 @@
+Anadolu East: force_during_hauling=True force_after_first_secured=True peak_delivery=2,000 final_complete=True
+Anadolu West: force_during_hauling=True force_after_first_secured=True peak_delivery=2,000 final_complete=True
+Barbaros East: force_during_hauling=True force_after_first_secured=True peak_delivery=2,000 final_complete=True
+Barbaros West: force_during_hauling=True force_after_first_secured=True peak_delivery=2,000 final_complete=True
+Barbaros: initial=17kn fall_seconds=1,76 splash=1 continued_metres=24,41 failure=none
+Anadolu: initial=17kn fall_seconds=2,55 splash=1 continued_metres=31,07 failure=none
+Ruzgar: initial=30kn fall_seconds=1,23 splash=1 continued_metres=34,83 failure=none
+Kumkale: initial=17kn fall_seconds=1,27 splash=1 continued_metres=19,93 failure=none

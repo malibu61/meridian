@@ -74,7 +74,7 @@ namespace Meridian
             Matrix4x4 previous=GUI.matrix;GUI.matrix=Matrix4x4.TRS(layout.Offset,Quaternion.identity,Vector3.one*layout.Scale);
             try
             {
-                DrawHeader(layout);RollGauge.Draw(ui,layout.RollInstrument,RollDegrees);
+                DrawHeader(layout);
                 DrawEngine(layout.Port,layout.FourEngines?"İSKELE DIŞ":"İSKELE",ship.PortThrottle,false);
                 DrawEngine(layout.Starboard,layout.FourEngines?"SANCAK DIŞ":"SANCAK",ship.StarboardThrottle,false);
                 if(layout.FourEngines){DrawEngine(layout.PortInner,"İSK. İÇ",ship.GetEngineThrottle(2),false);DrawEngine(layout.StarboardInner,"SANC. İÇ",ship.GetEngineThrottle(3),false);}
@@ -103,14 +103,12 @@ namespace Meridian
             if(session!=null&&GUI.Button(new Rect(r.x+12,r.y+16,88,48),"MENÜ",ui.Button)){pointers.Clear();session.OpenMenu();GUIUtility.ExitGUI();}
             ui.Text(new Rect(r.x+120,r.y+13,240,22),ship.Definition.Name,19,Ink,bold:true);
             ui.Text(new Rect(r.x+120,r.y+40,240,20),ship.Definition.Pennant+"   /   SEYİR KUMANDASI",12,Muted);
-            Metric(layout.HeaderMetric(0),"SÜRAT",$"{ship.SpeedKnots:0.0}","kn");
+            DrawSpeed(layout.HeaderMetric(0));
             Metric(layout.HeaderMetric(1),"BAŞ",$"{ship.Heading:000}","°");
             Metric(layout.HeaderMetric(2),"ROTA",$"{ship.CourseOverGround:000}","°");
-            Rect roll=layout.HeaderMetric(3);float angle=RollDegrees;
+            Rect roll=layout.HeaderMetric(3);
             Fill(new Rect(roll.x-14,roll.y+20,1,roll.height-40),new Color(.2f,.27f,.33f));
-            ui.Text(new Rect(roll.x,roll.y+12,roll.width-10,18),"YALPA",11,Muted);
-            ui.Text(new Rect(roll.x,roll.y+32,roll.width-10,27),$"{Mathf.Abs(angle):0.0} °",22,Ink,bold:true);
-            ui.Text(new Rect(roll.x,roll.y+61,roll.width-10,14),RollSide(angle),10,Teal,bold:true);
+            RollGauge.DrawCompact(ui,layout.RollInstrument,RollDegrees);
             string state=ship.AllEnginesSynchronized?(ship.CombinedThrottle==0?"STOP":ship.CombinedThrottle>0?"İLERİ":"TORNİSTAN"):"AYRI";
             Metric(layout.HeaderMetric(4),"MAKİNE",state,"");
         }
@@ -119,6 +117,25 @@ namespace Meridian
             Fill(new Rect(r.x-14,r.y+20,1,r.height-40),new Color(.2f,.27f,.33f));
             ui.Text(new Rect(r.x,r.y+12,r.width-10,18),label,11,Muted);
             ui.Text(new Rect(r.x,r.y+33,r.width-10,34),value+(unit==""?"":" "+unit),22,Ink,bold:true);
+        }
+        public static int TravelDirection(float signedKnots)=>!float.IsFinite(signedKnots)||Mathf.Abs(signedKnots)<.05f?0:signedKnots>0?1:-1;
+        private void DrawSpeed(Rect r)
+        {
+            Fill(new Rect(r.x-14,r.y+20,1,r.height-40),new Color(.2f,.27f,.33f));
+            int direction=TravelDirection(ship.SignedSpeedKnots);
+            Color color=direction>0?Teal:direction<0?Amber:Muted;
+            ui.Text(new Rect(r.x,r.y+12,r.width-10,18),"SÜRAT",11,Muted);
+            // Draw geometry rather than relying on a font's arrow glyph; up=ahead, down=astern.
+            Vector2 centre=new(r.x+8,r.y+50);
+            if(direction!=0)
+            {
+                Vector2 tail=centre+Vector2.up*(direction*9),tip=centre-Vector2.up*(direction*9);
+                Line(tail,tip,2.5f,color);
+                Line(tip,tip+new Vector2(-5,direction*6),2.5f,color);
+                Line(tip,tip+new Vector2(5,direction*6),2.5f,color);
+            }
+            else Line(centre-Vector2.right*5,centre+Vector2.right*5,2,Muted);
+            ui.Text(new Rect(r.x+24,r.y+33,r.width-30,34),$"{ship.SpeedKnots:0.0} kn",22,Ink,bold:true);
         }
         private void DrawEngine(Rect r,string title,float value,bool master)
         {

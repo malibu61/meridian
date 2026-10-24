@@ -5,6 +5,8 @@ namespace Meridian
     public sealed class FollowCamera : MonoBehaviour
     {
         private Transform target;
+        private GameSessionController session;
+        public void BindSession(GameSessionController value)=>session=value;
         private const float MinimumPitch = 8f;
         private const float MaximumPitch = 62f;
         private readonly OrbitZoomInput zoom = new();
@@ -125,6 +127,14 @@ namespace Meridian
             SnapToTarget();
         }
 
+        public void SetRescueView(int side)
+        {
+            // Show the incident borda at the briefing, not behind the hull/superstructure.
+            // This is a one-time starting view; normal mouse/touch orbit remains available.
+            yaw=targetYaw=-(side>=0?1:-1)*65f;pitch=targetPitch=20f;
+            SnapToTarget();
+        }
+
         private void OnApplicationFocus(bool focused)
         {
             if (!focused) { zoom.EndPinch(); mouseDragging = false; orbitFingerId = -1; }
@@ -163,7 +173,7 @@ namespace Meridian
             }
         }
 
-        private static bool IsCameraArea(Vector2 point) => point.x >= 0f && point.y >= 0f
+        private bool IsCameraArea(Vector2 point) => point.x >= 0f && point.y >= 0f
             && point.x <= Screen.width && point.y <= Screen.height && !IsHudRegion(point);
 
         private void ApplyOrbitDelta(Vector2 delta)
@@ -172,10 +182,12 @@ namespace Meridian
             targetPitch = Mathf.Clamp(targetPitch - delta.y * 0.16f, MinimumPitch, MaximumPitch);
         }
 
-        private static bool IsHudRegion(Vector2 screenPosition)
+        private bool IsHudRegion(Vector2 screenPosition)
         {
             HelmLayout layout=HelmLayout.Current;
-            return layout.BlocksCamera(layout.FromScreen(screenPosition))||TugAssistController.BlocksCamera(screenPosition);
+            return layout.BlocksCamera(layout.FromScreen(screenPosition))||TugAssistController.BlocksCamera(screenPosition)
+                ||session!=null&&session.ActiveMode==SimulationMode.StraitPassage&&layout.RouteMap.Contains(layout.FromScreen(screenPosition))
+                ||session!=null&&(session.Audio!=null&&session.Audio.BlocksCamera(screenPosition)||session.Mooring!=null&&session.Mooring.BlocksCamera(screenPosition)||session.Missions!=null&&session.Missions.Running&&MissionController.HudRect(layout).Contains(layout.FromScreen(screenPosition)));
         }
     }
 }

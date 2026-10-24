@@ -1,0 +1,12 @@
+case=0 dx_metres=6,115 yaw_deg=0,000
+case=1 dx_metres=-6,115 yaw_deg=0,000
+case=2 dx_metres=3,072 yaw_deg=14,510
+case=3 dx_metres=3,072 yaw_deg=-14,510
+case=4 dx_metres=6,102 yaw_deg=0,000
+case=5 dx_metres=6,102 yaw_deg=0,000
+case=0 dx_metres=5,985 yaw_deg=0,000
+case=1 dx_metres=-5,985 yaw_deg=0,000
+case=2 dx_metres=3,005 yaw_deg=14,029
+case=3 dx_metres=3,005 yaw_deg=-14,029
+case=4 dx_metres=5,972 yaw_deg=0,000
+case=5 dx_metres=5,972 yaw_deg=0,000

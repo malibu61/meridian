@@ -1,0 +1,1 @@
+FLEET_RULES_PASS checks=145 missions=20 vessel_namespaces=4 legacy_kumkale_preserved

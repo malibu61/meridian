@@ -22,7 +22,7 @@ namespace Meridian.Editor
         {
             checks=0;Directory.CreateDirectory(Folder);
             foreach(var vessel in VesselCatalog.All)foreach(var mode in new[]{SimulationMode.Harbor,SimulationMode.StraitPassage,SimulationMode.BuoyMooring})
-                Check(TugAssistRules.Available(mode,vessel)==(vessel==VesselId.Anadolu&&mode==SimulationMode.Harbor),"Anadolu harbour only "+vessel+"/"+mode);
+                Check(TugAssistRules.Available(mode,vessel)==((vessel==VesselId.Anadolu||vessel==VesselId.Barbaros)&&mode==SimulationMode.Harbor),"large-vessel harbour support "+vessel+"/"+mode);
             Check(!TugAssistRules.Valid(HarborBerth.None)&&!TugAssistRules.Valid((HarborBerth)99),"reject unset/invalid berths");
             Check(TugAssistRules.PushSign(Vector3.right,HarborBerth.East)==1&&TugAssistRules.PushSign(Vector3.right,HarborBerth.West)==-1,"opposite side push");
             Check(TugAssistRules.PushSign(Vector3.left,HarborBerth.East)==-1,"ship-relative side");
